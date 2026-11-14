@@ -7,9 +7,6 @@
       "installCommand": "npm ci",
       "buildCommand": "npm run build",
       "outputDirectory": "dist",
-      "functions": {
-        "api/*.ts": { "maxDuration": 20, "includeFiles": "api/_data/**" }
-      },
       "headers": [
         {
           "source": "/data/(.*)",
@@ -17,7 +14,15 @@
         }
       ],
       "rewrites": [{ "source": "/((?!api/|data/|assets/).*)", "destination": "/index.html" }]
+    },
+    "api": {
+      "root": "api",
+      "framework": "express",
+      "entrypoint": "index.ts"
     }
   },
-  "rewrites": [{ "source": "/(.*)", "destination": { "service": "web" } }]
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": { "service": "api" } },
+    { "source": "/(.*)", "destination": { "service": "web" } }
+  ]
 }

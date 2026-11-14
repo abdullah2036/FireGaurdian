@@ -8,7 +8,7 @@ RAW_DIR = PIPELINE / "data" / "raw"
 BOUNDARY_SRC = PIPELINE / "data" / "boundaries_src"
 BOUNDARY_FILE = PIPELINE / "data" / "boundaries" / "regions.geojson"
 OUT_DIR = ROOT / "web" / "public" / "data"
-API_DATA_DIR = ROOT / "web" / "api" / "_data"
+API_DATA_DIR = ROOT / "api" / "data"  # JS modules bundled into the API service
 
 # ~1 km persistence-mask grid (degrees)
 MASK_CELL_DEG = 0.01

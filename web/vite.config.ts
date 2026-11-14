@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
 
-// Dev-only: serve /web/api/*.ts Vercel functions through Vite so `npm run dev` works without `vercel dev`.
+// Dev-only: serve the ../api handlers through Vite so `npm run dev` works without `vercel dev`.
 function vercelApiDev(): Plugin {
   return {
     name: 'vercel-api-dev',
@@ -16,7 +16,8 @@ function vercelApiDev(): Plugin {
         const name = url.pathname.replace(/^\/api\//, '').replace(/\/$/, '')
         if (!/^[a-z0-9-]+$/i.test(name)) return next()
         try {
-          const mod = await server.ssrLoadModule(`/api/${name}.ts`)
+          const file = path.resolve(import.meta.dirname, '..', 'api', 'handlers', `${name}.ts`).split(path.sep).join('/')
+          const mod = await server.ssrLoadModule(`/@fs/${file.replace(/^\//, '')}`)
           const vreq = Object.assign(req, { query: Object.fromEntries(url.searchParams) })
           const vres = Object.assign(res, {
             status(code: number) { res.statusCode = code; return vres },

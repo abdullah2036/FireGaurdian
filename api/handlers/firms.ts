@@ -3,9 +3,8 @@
 // KSA border, flags gas flares / industrial sources, and caches responses.
 // Falls back to clearly-labelled mock data when FIRMS_MAP_KEY is missing or FIRMS fails.
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
-import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { cached, parseCSV, sendJSON } from './_lib/http.js'
-import { inKSA, staticReason } from './_lib/geo.js'
+import { cached, parseCSV, sendJSON, type Req, type Res } from '../lib/http.js'
+import { inKSA, staticReason } from '../lib/geo.js'
 
 const SOURCES = ['VIIRS_NOAA20_NRT', 'VIIRS_NOAA21_NRT', 'MODIS_NRT', 'VIIRS_SNPP_NRT'] as const
 const KSA_BBOX = '34.4,16.3,55.7,32.2' // query window; results are clipped to the border polygon
@@ -82,7 +81,7 @@ function flagLivePersistence(dets: Detection[]) {
   }
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: Req, res: Res) {
   const q = req.query as Record<string, string>
   const days = Math.min(5, Math.max(1, Number(q.days ?? 1) || 1)) // FIRMS Area API allows 1–5 days
   const requested = (q.source ?? 'VIIRS_NOAA20_NRT,VIIRS_NOAA21_NRT').split(',')

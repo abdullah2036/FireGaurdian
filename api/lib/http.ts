@@ -1,6 +1,13 @@
 // Tiny in-memory TTL cache + response helpers shared by the API proxies.
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
-import type { VercelResponse } from '@vercel/node'
+
+/** Minimal request/response shapes; satisfied by Express and by the Vite dev middleware. */
+export interface Req { query: Record<string, unknown> }
+export interface Res {
+  status(code: number): Res
+  setHeader(name: string, value: string): unknown
+  send(body: string): unknown
+}
 
 const store = new Map<string, { exp: number; value: unknown }>()
 
@@ -16,7 +23,7 @@ export async function cached<T>(key: string, ttlSec: number, fn: () => Promise<T
   return { value, hit: false }
 }
 
-export function sendJSON(res: VercelResponse, status: number, body: unknown, sMaxAge = 0) {
+export function sendJSON(res: Res, status: number, body: unknown, sMaxAge = 0) {
   if (sMaxAge > 0) res.setHeader('Cache-Control', `public, max-age=60, s-maxage=${sMaxAge}, stale-while-revalidate=${sMaxAge * 4}`)
   else res.setHeader('Cache-Control', 'no-store')
   res.setHeader('Content-Type', 'application/json')

@@ -4,8 +4,7 @@
 // Coordinates are snapped to 0.25° and responses cached for 30 min to stay within the
 // 1,000 queries/day quota. Falls back to clearly-labelled mock data when credentials are missing.
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
-import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { cached, sendJSON } from './_lib/http.js'
+import { cached, sendJSON, type Req, type Res } from '../lib/http.js'
 
 const PARAMS = ['t_2m:C', 'relative_humidity_2m:p', 'wind_speed_10m:kmh', 'wind_dir_10m:d'] as const
 const KEYS = ['temp', 'humidity', 'wind', 'windDir'] as const
@@ -62,7 +61,7 @@ function mockSeries(lat: number, lon: number, start: Date): WeatherResp['series'
   })
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: Req, res: Res) {
   const q = req.query as Record<string, string>
   const lat = snap(Number(q.lat ?? 18.25)), lon = snap(Number(q.lon ?? 42.5))
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180)
