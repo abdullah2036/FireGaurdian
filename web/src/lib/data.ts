@@ -47,7 +47,7 @@ export function calendarCSV(d: CalendarData, from: string, to: string): string {
   const head = ['month', 'modis_raw', 'viirs_raw', 'viirs_on_modis_scale', 'harmonized_modis_scale',
     'naive_raw_series', 'robust_z', 'anomaly', 'ratio_used', 'note']
   const rows = [
-    `# NovaShift harmonized MODIS/VIIRS hotspot counts — region: ${d.name}`,
+    `# Fire Guardian harmonized MODIS/VIIRS hotspot counts — region: ${d.name}`,
     `# Units: hotspot detections per month on the MODIS (1 km) scale. Hotspots != individual fires; missing != zero.`,
     `# Harmonized = mean of available MODIS-scale estimates (never MODIS + VIIRS). Overall VIIRS/MODIS ratio: ${d.ratio.overall}`,
     head.join(','),

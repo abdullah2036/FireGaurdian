@@ -1,4 +1,4 @@
-// shadcn/ui-style wrappers over Radix primitives, themed for NovaShift.
+// shadcn/ui-style wrappers over Radix primitives, themed for Fire Guardian.
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
 import * as TooltipP from '@radix-ui/react-tooltip'
 import * as PopoverP from '@radix-ui/react-popover'

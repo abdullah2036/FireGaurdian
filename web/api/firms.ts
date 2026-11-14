@@ -12,7 +12,7 @@ const KSA_BBOX = '34.4,16.3,55.7,32.2' // query window; results are clipped to t
 
 export interface Detection {
   lat: number; lon: number; date: string; time: string; satellite: string; source: string
-  conf: 'l' | 'n' | 'h' | 'u'; frp: number | null; daynight: string; static: string | null
+  conf: 'l' | 'n' | 'h' | 'u'; frp: number | null; brightK: number | null; daynight: string; static: string | null
 }
 
 function normConf(c: string): Detection['conf'] {
@@ -36,7 +36,8 @@ async function fetchSource(key: string, source: string, days: number): Promise<D
       const lat = Number(row.latitude), lon = Number(row.longitude)
       return {
         lat, lon, date: row.acq_date, time: (row.acq_time ?? '').padStart(4, '0'), satellite: row.satellite, source,
-        conf: normConf(row.confidence), frp: row.frp ? Number(row.frp) : null, daynight: row.daynight,
+        conf: normConf(row.confidence), frp: row.frp ? Number(row.frp) : null,
+        brightK: Number(row.bright_ti4 ?? row.brightness) || null, daynight: row.daynight,
         static: staticReason(lat, lon, row.type ? Number(row.type) : null),
       }
     }).filter((d) => Number.isFinite(d.lat) && inKSA(d.lon, d.lat))
@@ -57,9 +58,28 @@ function mock(source: string, days: number): Detection[] {
     return {
       lat, lon, date: today, time: String(Math.floor(rnd() * 2359)).padStart(4, '0'), satellite: source.includes('21') ? 'N21' : 'N20',
       source, conf: (['l', 'n', 'h'] as const)[Math.floor(rnd() * 3)], frp: Math.round(rnd() * 400) / 10,
+      brightK: Math.round(310 + rnd() * 60),
       daynight: rnd() > 0.5 ? 'D' : 'N', static: staticReason(lat, lon),
     }
   })
+}
+
+/**
+ * Live-window persistence: flares burn through every overpass, mostly at night, while Saudi
+ * vegetation and agricultural fires are short-lived and mostly daytime. A detection is flagged
+ * when, within ~1.5 km, it was seen on >= 2 distinct overpasses and >= 50 % of those sightings
+ * are at night. (Trade-off: a night-dominant wildfire burning over two passes is also flagged.)
+ */
+function flagLivePersistence(dets: Detection[]) {
+  const open = dets.filter((d) => !d.static)
+  const kmLat = 111.2
+  for (const d of open) {
+    const kmLon = kmLat * Math.cos((d.lat * Math.PI) / 180)
+    const near = open.filter((o) => Math.hypot((o.lat - d.lat) * kmLat, (o.lon - d.lon) * kmLon) <= 1.5)
+    const passes = new Set(near.map((o) => `${o.satellite}|${o.date}|${o.time}`))
+    const night = near.filter((o) => o.daynight === 'N').length / near.length
+    if (passes.size >= 2 && night >= 0.5) d.static = 'night-persistent-live'
+  }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -77,13 +97,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!key) { out.push(...mock(src, days)); continue }
     try {
       const { value } = await cached(`firms:${src}:${days}`, 600, () => fetchSource(key, src, days))
-      out.push(...value)
+      out.push(...value.map((d) => ({ ...d }))) // copy: persistence flags must not mutate the cache
     } catch (e) {
       errors.push(`${src}: ${(e as Error).message}`)
       out.push(...mock(src, days))
       isMock = true
     }
   }
+  flagLivePersistence(out)
   sendJSON(res, 200, {
     fetchedAt: new Date().toISOString(),
     sources, days, mock: isMock, errors,

@@ -4,7 +4,6 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { Mode, ViewId } from './types'
 
 export interface AppState {
-  entered: boolean
   view: ViewId
   region: string
   from: string
@@ -12,16 +11,15 @@ export interface AppState {
   mode: Mode
 }
 
-const VIEWS: ViewId[] = ['calendar', 'live', 'risk', 'drone', 'method', 'about']
+const VIEWS: ViewId[] = ['overview', 'calendar', 'method', 'operations', 'about']
 export const DEFAULT_FROM = '2001-01'
 export const DEFAULT_TO = '2026-11'
 
 function parse(hash: string): AppState {
   const [path, q] = hash.replace(/^#\/?/, '').split('?')
   const p = new URLSearchParams(q ?? '')
-  const view = (VIEWS.includes(path as ViewId) ? path : 'calendar') as ViewId
+  const view = (VIEWS.includes(path as ViewId) ? path : 'overview') as ViewId
   return {
-    entered: path !== '' && path !== undefined,
     view,
     region: p.get('r') ?? 'ksa',
     from: p.get('from') ?? DEFAULT_FROM,
@@ -31,7 +29,6 @@ function parse(hash: string): AppState {
 }
 
 function serialize(s: AppState): string {
-  if (!s.entered) return '#/'
   const p = new URLSearchParams({ r: s.region })
   if (s.from !== DEFAULT_FROM) p.set('from', s.from)
   if (s.to !== DEFAULT_TO) p.set('to', s.to)

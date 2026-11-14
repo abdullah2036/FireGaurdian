@@ -159,7 +159,7 @@ function Method({ data }: { data: CalendarData }) {
         <li><b className="text-ink">6 · Validate.</b> Leave-one-year-out prediction of MODIS from VIIRS, and correlation of monthly counts.</li>
       </ol>
       <p className="mt-4 rounded-lg border border-line p-3 text-xs text-muted">
-        <b className="text-ink">Why the ratio is high in KSA.</b> Published comparisons for large-wildfire regions such as Portugal find VIIRS ≈ 2.8× MODIS. Saudi fires are mostly small agricultural and waste burns that 1 km MODIS often misses but 375 m VIIRS detects, so the ratio is regional (≈5–7 in Asir, Al Jawf and Ha'il; higher where small industrial sources may remain). That is why NovaShift learns it per region and month instead of using one global factor.
+        <b className="text-ink">Why the ratio is high in KSA.</b> Published comparisons for large-wildfire regions such as Portugal find VIIRS ≈ 2.8× MODIS. Saudi fires are mostly small agricultural and waste burns that 1 km MODIS often misses but 375 m VIIRS detects, so the ratio is regional (≈5–7 in Asir, Al Jawf and Ha'il; higher where small industrial sources may remain). That is why Fire Guardian learns it per region and month instead of using one global factor.
       </p>
     </Panel>
   )

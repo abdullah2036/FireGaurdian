@@ -17,7 +17,7 @@ export async function cached<T>(key: string, ttlSec: number, fn: () => Promise<T
 }
 
 export function sendJSON(res: VercelResponse, status: number, body: unknown, sMaxAge = 0) {
-  if (sMaxAge > 0) res.setHeader('Cache-Control', `public, s-maxage=${sMaxAge}, stale-while-revalidate=${sMaxAge * 4}`)
+  if (sMaxAge > 0) res.setHeader('Cache-Control', `public, max-age=60, s-maxage=${sMaxAge}, stale-while-revalidate=${sMaxAge * 4}`)
   else res.setHeader('Cache-Control', 'no-store')
   res.setHeader('Content-Type', 'application/json')
   res.status(status).send(JSON.stringify(body))

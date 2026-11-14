@@ -1,43 +1,41 @@
-// App shell: landing screen, or dock + top bar + active view.
+// App shell: Fire Guardian top navigation, Overview hero, active view, footer.
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { useApp } from '@/lib/store'
+import { LiveProvider } from '@/lib/live'
 import { Starfield } from '@/components/Starfield'
-import { Landing } from '@/components/Landing'
-import { Dock } from '@/components/Dock'
-import { TopBar } from '@/components/TopBar'
+import { EarthLimb, Footer, Header, Hero } from '@/components/Shell'
 import { CommandPalette } from '@/components/CommandPalette'
 import { TooltipProvider } from '@/components/ui'
-import { CalendarView } from '@/views/CalendarView'
-import { MethodView } from '@/views/MethodView'
+import { OverviewView } from '@/views/OverviewView'
+import { OperationsView } from '@/views/OperationsView'
 import { AboutView } from '@/views/AboutView'
-import { DroneView, LiveView, RiskView } from '@/views/Upcoming'
+
+// Analytics pulls in ECharts; load it on demand so the Overview opens fast.
+const AnalyticsView = lazy(() => import('@/views/AnalyticsView').then((m) => ({ default: m.AnalyticsView })))
 
 export default function App() {
-  const { entered, view } = useApp()
+  const { view } = useApp()
   const [palette, setPalette] = useState(false)
   return (
     <TooltipProvider>
-      <Starfield density={entered ? 0.00006 : 0.00014} />
-      <CommandPalette open={palette} setOpen={setPalette} />
-      {!entered ? (
-        <Landing />
-      ) : (
-        <div className="flex h-full gap-3 p-3">
-          <Dock />
-          <div className="flex min-w-0 flex-1 flex-col gap-3">
-            <TopBar onPalette={() => setPalette(true)} />
-            <main id="main" className="min-h-0 flex-1 overflow-y-auto pr-1" key={view}>
-              {view === 'calendar' && <CalendarView />}
-              {view === 'method' && <MethodView />}
-              {view === 'live' && <LiveView />}
-              {view === 'risk' && <RiskView />}
-              {view === 'drone' && <DroneView />}
-              {view === 'about' && <AboutView />}
-            </main>
-          </div>
+      <LiveProvider>
+        <Starfield density={0.00008} />
+        <CommandPalette open={palette} setOpen={setPalette} />
+        <div className="relative min-h-full overflow-x-hidden">
+          {view === 'overview' && <EarthLimb />}
+          <Header onPalette={() => setPalette(true)} />
+          <main id="main" className="relative z-10 mx-auto max-w-[1680px] pt-6 md:pt-0">
+            {view === 'overview' && (<><Hero /><OverviewView /></>)}
+            {(view === 'calendar' || view === 'method') && (
+              <Suspense fallback={<div className="px-8 py-20 text-center text-sm text-muted">Loading analytics…</div>}><AnalyticsView /></Suspense>
+            )}
+            {view === 'operations' && <OperationsView />}
+            {view === 'about' && <AboutView />}
+          </main>
+          <Footer />
         </div>
-      )}
+      </LiveProvider>
     </TooltipProvider>
   )
 }

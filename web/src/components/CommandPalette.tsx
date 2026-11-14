@@ -6,7 +6,7 @@ import { MapPin, Search, Shuffle } from 'lucide-react'
 import { useApp } from '@/lib/store'
 import { useIndex } from '@/lib/data'
 import { Dialog, DialogContent } from './ui'
-import { VIEW_META } from './Dock'
+import { VIEW_META } from './Shell'
 
 export function CommandPalette({ open, setOpen }: { open: boolean; setOpen: (o: boolean) => void }) {
   const { set, mode } = useApp()
@@ -24,7 +24,7 @@ export function CommandPalette({ open, setOpen }: { open: boolean; setOpen: (o: 
   }, [open, setOpen])
 
   const go = (patch: Parameters<typeof set>[0]) => {
-    set({ entered: true, ...patch })
+    set(patch)
     setOpen(false)
   }
   const item = 'flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-sm data-[selected=true]:bg-white/[0.07]'

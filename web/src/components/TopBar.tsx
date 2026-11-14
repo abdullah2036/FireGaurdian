@@ -1,4 +1,4 @@
-// Top bar: region selector, date range, Raw/Harmonized toggle, data freshness.
+// Shared controls: region selector, date range, Raw/Harmonized toggle, data freshness.
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
 import { useMemo, useState } from 'react'
 import { Command } from 'cmdk'
@@ -6,46 +6,30 @@ import { CalendarRange, ChevronDown, MapPin, Search, Satellite } from 'lucide-re
 import { useApp, DEFAULT_FROM, DEFAULT_TO } from '@/lib/store'
 import { useIndex } from '@/lib/data'
 import { Button, Popover, PopoverContent, PopoverTrigger, Segmented, Tip } from './ui'
-import { VIEW_META } from './Dock'
 
-export function TopBar({ onPalette }: { onPalette: () => void }) {
-  const { view, mode, set } = useApp()
-  const showSeriesControls = view === 'calendar' || view === 'method'
-  const title = VIEW_META.find((v) => v.id === view)?.label
+/** Toolbar for the Analytics view: region, date range, Raw/Harmonized, data freshness. */
+export function AnalyticsToolbar() {
+  const { mode, set } = useApp()
   return (
-    <header className="glass flex h-14 shrink-0 items-center gap-2 px-3">
-      <h1 className="font-display text-[15px] font-semibold tracking-tight pr-2 hidden lg:block">
-        NovaShift <span className="text-faint font-normal">/ {title}</span>
-      </h1>
+    <div className="fg-card flex flex-wrap items-center gap-2 p-2.5">
       <RegionSelect />
-      {showSeriesControls && <DateRange />}
-      {showSeriesControls && (
-        <Tip side="bottom" label="Raw = MODIS until 2011, then raw VIIRS (shows the sensor jump). Harmonized = one consistent MODIS-scale series.">
-          <span>
-            <Segmented
-              label="Series mode"
-              value={mode}
-              onChange={(m) => set({ mode: m })}
-              options={[{ value: 'raw', label: 'Raw' }, { value: 'harmonized', label: 'Harmonized' }]}
-            />
-          </span>
-        </Tip>
-      )}
-      <div className="ml-auto flex items-center gap-2">
-        <button
-          onClick={onPalette}
-          className="hidden md:inline-flex h-9 items-center gap-2 rounded-lg border border-line-strong/80 px-3 text-sm text-muted hover:text-ink cursor-pointer"
-          aria-label="Open command palette"
-        >
-          <Search size={14} /> Jump to… <kbd className="num rounded bg-white/10 px-1.5 text-[10px]">Ctrl K</kbd>
-        </button>
-        <Freshness />
-      </div>
-    </header>
+      <DateRange />
+      <Tip side="bottom" label="Raw = MODIS until 2011, then raw VIIRS (shows the sensor jump). Harmonized = one consistent MODIS-scale series.">
+        <span>
+          <Segmented
+            label="Series mode"
+            value={mode}
+            onChange={(m) => set({ mode: m })}
+            options={[{ value: 'raw', label: 'Raw' }, { value: 'harmonized', label: 'Harmonized' }]}
+          />
+        </span>
+      </Tip>
+      <div className="ml-auto"><Freshness /></div>
+    </div>
   )
 }
 
-function RegionSelect() {
+export function RegionSelect({ compact = false }: { compact?: boolean }) {
   const { region, set } = useApp()
   const { data } = useIndex()
   const [open, setOpen] = useState(false)
@@ -60,10 +44,10 @@ function RegionSelect() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button aria-label="Select region" className="min-w-[180px] justify-between">
+        <Button aria-label="Select region" className={compact ? 'h-9 rounded-full px-4 justify-between gap-3' : 'min-w-[180px] justify-between'}>
           <span className="inline-flex items-center gap-2 truncate">
-            <MapPin size={15} className="text-ember" />
-            {current?.short ?? region}
+            {!compact && <MapPin size={15} className="text-ember" />}
+            {compact && region === 'ksa' ? 'KSA' : current?.short ?? region}
           </span>
           <ChevronDown size={14} className="text-muted" />
         </Button>
@@ -96,13 +80,12 @@ function RegionSelect() {
             ))}
           </Command.List>
         </Command>
-        <p className="border-t border-line px-3 py-2 text-[11px] text-faint">Custom areas (draw on map / lat-lon) arrive with the Live Map.</p>
       </PopoverContent>
     </Popover>
   )
 }
 
-function DateRange() {
+export function DateRange() {
   const { from, to, set } = useApp()
   const years = Array.from({ length: 2026 - 2001 + 1 }, (_, i) => 2001 + i)
   const presets = [
@@ -149,7 +132,7 @@ function DateRange() {
   )
 }
 
-function Freshness() {
+export function Freshness() {
   const { data } = useIndex()
   if (!data) return null
   const v = data.coverage.VIIRS, m = data.coverage.MODIS

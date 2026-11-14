@@ -105,6 +105,28 @@ def main():
     size = _write(OUT_DIR / "grid.json", grid)
     print(f"  grid: {len(cells):,} cells ({size/1024:.0f} KB)")
 
+    # Seasonal outlook: per 0.25° cell and calendar month, the fraction of years in which the cell
+    # had at least one (flare-masked) hotspot. Uses complete years of the dual-sensor era so the
+    # sensor mix is constant. Placeholder baseline until the AI model layer is added.
+    rc = 0.25
+    yrs = sorted(y for y in masked["year"].unique() if 2012 <= y <= int(end[:4]) - 1)
+    rm = masked[masked["year"].isin(yrs)]
+    r = pd.DataFrame({"i": np.floor(rm["latitude"].values / rc).astype(int),
+                      "j": np.floor(rm["longitude"].values / rc).astype(int),
+                      "y": rm["year"].values, "m": rm["month"].values})
+    r = r.drop_duplicates()
+    freq = r.groupby(["i", "j", "m"]).size().unstack("m", fill_value=0).reindex(columns=range(1, 13), fill_value=0)
+    ksa_shape = next(g for p, g in regions if p["id"] == "ksa")
+    ci = freq.index.get_level_values(0).values * rc + rc / 2
+    cj = freq.index.get_level_values(1).values * rc + rc / 2
+    inside = shapely.contains_xy(ksa_shape.buffer(rc / 2), cj, ci)
+    risk_cells = [[round(float(a), 3), round(float(b), 3), [round(int(v) / len(yrs), 2) for v in row]]
+                  for a, b, row, ok in zip(ci, cj, freq.values, inside) if ok]
+    size = _write(OUT_DIR / "risk.json", {
+        "cellDeg": rc, "years": [int(yrs[0]), int(yrs[-1])], "method": "share of years with >=1 masked hotspot in the cell that calendar month",
+        "cells": risk_cells})
+    print(f"  risk: {len(risk_cells):,} cells over {len(yrs)} years ({size/1024:.0f} KB)")
+
     # Static-source cells for masking live detections in /api/firms
     _write(API_DATA_DIR / "static_cells.json", {
         "keyBase": 100000,
