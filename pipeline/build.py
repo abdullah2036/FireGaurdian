@@ -1,0 +1,137 @@
+# One-command pipeline: python -m pipeline.build
+# AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
+"""Raw FIRMS zips -> cleaned, masked, clipped, harmonized JSON for the web app."""
+import json
+import time
+from datetime import datetime, timezone
+
+import numpy as np
+import pandas as pd
+import shapely
+
+from .boundaries import build_boundaries, load_regions
+from .config import API_DATA_DIR, GRID_CELL_DEG, OUT_DIR
+from .harmonize import harmonize_region, month_range
+from .load import load_raw
+from .mask import apply_mask, build_mask
+
+
+def _coverage(df: pd.DataFrame, fam: str):
+    d = df.loc[df["family"] == fam, "date"]
+    first, last = d.min(), d.max()
+    first_full = first.to_period("M") if first.day == 1 else first.to_period("M") + 1
+    last_m = last.to_period("M")
+    month_end = last_m.to_timestamp(how="end").normalize()
+    partial = {}
+    if last.normalize() >= month_end:
+        last_full = last_m
+    elif last.day >= 7:  # keep a trailing partial month if it has a week of data
+        last_full = last_m
+        partial[str(last_m)] = f"partial month: {fam} data to {last:%d %b %Y}"
+    else:
+        last_full = last_m - 1
+    return (str(first_full), str(last_full)), partial, first, last
+
+
+def _write(path, obj):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(obj, fh, separators=(",", ":"), allow_nan=False)
+    return path.stat().st_size
+
+
+def main():
+    t0 = time.time()
+    print("NovaShift pipeline")
+    build_boundaries()
+    regions, region_fc = load_regions()
+    df = load_raw()
+
+    mask, mask_report = build_mask(df)
+    masked, flagged, layers = apply_mask(df, mask)
+    mask_report.update({
+        "removedByLayer": layers,
+        "inputDetections": int(len(df)),
+        "removedTypeOrStatic": int(flagged.sum()),
+        "kept": int(len(masked)),
+        "removedByFamily": {f: int(flagged[(df["family"] == f).values].sum()) for f in ("MODIS", "VIIRS")},
+    })
+    print(f"  mask layers removed {layers}; "
+          f"kept {len(masked):,} / {len(df):,}")
+
+    avail, partial, cover = {}, {}, {}
+    for fam in ("MODIS", "VIIRS"):
+        avail[fam], p, first, last = _coverage(df, fam)
+        partial.update(p)
+        cover[fam] = {"first": f"{first:%Y-%m-%d}", "last": f"{last:%Y-%m-%d}",
+                      "fullFrom": avail[fam][0], "fullTo": avail[fam][1],
+                      "satellites": sorted(df.loc[df["family"] == fam, "satellite"].unique().tolist())}
+    end = max(a[1] for a in avail.values())
+    months = month_range("2001-01", end)
+
+    x, y = masked["longitude"].values, masked["latitude"].values
+    xr, yr = df["longitude"].values, df["latitude"].values
+    index = []
+    for props, geom in regions:
+        rid = props["id"]
+        shapely.prepare(geom)
+        inside = shapely.contains_xy(geom, x, y)
+        inside_raw = shapely.contains_xy(geom, xr, yr)
+        sub = masked[inside]
+        meta = {"id": rid, "name": props["name"], "short": props.get("short", props["name"]),
+                "kind": props["kind"], "bbox": props["bbox"],
+                "detections": {"raw": int(inside_raw.sum()), "kept": int(inside.sum())}}
+        res = harmonize_region(sub, months, avail, partial, meta)
+        size = _write(OUT_DIR / "calendar" / f"{rid}.json", res)
+        v = res["validation"]
+        print(f"  {rid:8s} kept {inside.sum():>7,}  R={res['ratio']['overall']:.2f}  "
+              f"r={v['pearsonMonthly']}  LOYO APE naive/overall/monthly="
+              f"{v['loyoSummary']['medianAnnualAPE']}  ({size/1024:.0f} KB)")
+        index.append({**meta, "ratio": res["ratio"]["overall"], "pearson": v["pearsonMonthly"],
+                      "peakMonth": res["summary"]["peakMonth"]})
+
+    # Coarse grid for custom areas: sparse [cell, monthIdx, count] per family
+    mi = {m: k for k, m in enumerate(months)}
+    gi = np.floor(masked["latitude"].values / GRID_CELL_DEG).astype(int)
+    gj = np.floor(masked["longitude"].values / GRID_CELL_DEG).astype(int)
+    g = pd.DataFrame({"i": gi, "j": gj, "fam": masked["family"].values, "m": masked["ym"].map(mi).values})
+    g = g.dropna()
+    cells = g[["i", "j"]].drop_duplicates().sort_values(["i", "j"]).reset_index(drop=True)
+    cid = {(a, b): k for k, (a, b) in enumerate(zip(cells.i, cells.j))}
+    grid = {"cellDeg": GRID_CELL_DEG, "months": months, "cells": cells.values.tolist()}
+    for fam in ("MODIS", "VIIRS"):
+        c = g[g.fam == fam].groupby(["i", "j", "m"]).size().reset_index(name="n")
+        grid[fam.lower()] = [[cid[(a, b)], int(mm), int(n)] for a, b, mm, n in zip(c.i, c.j, c.m, c.n)]
+    size = _write(OUT_DIR / "grid.json", grid)
+    print(f"  grid: {len(cells):,} cells ({size/1024:.0f} KB)")
+
+    # Static-source cells for masking live detections in /api/firms
+    _write(API_DATA_DIR / "static_cells.json", {
+        "keyBase": 100000,
+        "fineDeg": mask_report["cellDeg"], "fine": sorted(int(k) for k in mask["fine"]),
+        "coarseDeg": mask_report["coarseCellDeg"], "coarse": sorted(int(k) for k in mask["coarse"]),
+    })
+    if mask["gihs"] is not None:
+        from shapely.geometry import mapping
+        g = mask["gihs"].simplify(0.002)
+        _write(API_DATA_DIR / "gihs.json", mapping(g))
+        _write(OUT_DIR / "gihs.geojson", {"type": "FeatureCollection", "features": [
+            {"type": "Feature", "properties": {"source": "GIHS v3.0, CC BY 4.0"}, "geometry": mapping(g)}]})
+
+    ksa_geom = next(f["geometry"] for f in region_fc["features"] if f["properties"]["id"] == "ksa")
+    _write(API_DATA_DIR / "ksa.json", ksa_geom)
+    _write(OUT_DIR / "regions.geojson", region_fc)
+    _write(OUT_DIR / "index.json", {
+        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "months": [months[0], months[-1]],
+        "coverage": cover,
+        "partial": partial,
+        "mask": mask_report,
+        "regions": index,
+        "defaultRegion": "ksa",
+    })
+    print(f"done in {time.time()-t0:.1f}s -> {OUT_DIR}")
+
+
+if __name__ == "__main__":
+    main()

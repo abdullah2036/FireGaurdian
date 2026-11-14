@@ -1,0 +1,21 @@
+# Secrets — never commit
+api_keys.txt
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Large downloaded sources (re-fetchable; see pipeline/boundaries.py, pipeline/README)
+pipeline/data/boundaries_src/
+pipeline/data/gihs_src/
+
+# Node / build
+node_modules/
+web/dist/
+.vercel/
+*.log
+.DS_Store

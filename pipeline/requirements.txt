@@ -1,0 +1,6 @@
+# NovaShift pipeline (Python 3.11+)
+pandas>=2.2
+numpy>=1.26
+shapely>=2.0
+scikit-learn>=1.4
+pyshp>=2.3   # only needed to re-extract GIHS from the original shapefile

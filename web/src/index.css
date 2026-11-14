@@ -1,0 +1,68 @@
+/* NovaShift theme — "mission control in deep space". AI-assisted: written with Claude Code (Anthropic). */
+@import "tailwindcss";
+
+@theme {
+  --color-void: #050811;
+  --color-space: #070b16;
+  --color-panel: rgb(13 20 38 / 0.62);
+  --color-line: rgb(148 163 184 / 0.14);
+  --color-line-strong: rgb(148 163 184 / 0.28);
+  --color-ink: #e6ebf5;
+  --color-muted: #94a0b8;
+  --color-faint: #5d6981;
+  --color-ember: #ff7a3d;
+  --color-ember-soft: rgb(255 122 61 / 0.14);
+  --color-cyan: #22d3ee;
+  --color-cyan-soft: rgb(34 211 238 / 0.12);
+  --color-danger: #f87171;
+  --color-ok: #4ade80;
+
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: radial-gradient(1200px 700px at 70% -10%, #0c1630 0%, transparent 60%),
+              radial-gradient(900px 600px at -10% 110%, #160d1c 0%, transparent 60%),
+              var(--color-void);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.glass {
+  background: var(--color-panel);
+  border: 1px solid var(--color-line);
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  border-radius: 14px;
+}
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-muted); }
+
+:focus-visible { outline: 2px solid var(--color-cyan); outline-offset: 2px; border-radius: 6px; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: rgb(148 163 184 / 0.2); border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+@keyframes fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.fade-up { animation: fade-up 0.35s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .fade-up { animation: none; }
+  * { scroll-behavior: auto !important; }
+}
+
+/* Radix popper content */
+.pop {
+  background: rgb(10 16 31 / 0.96);
+  border: 1px solid var(--color-line-strong);
+  border-radius: 12px;
+  box-shadow: 0 20px 50px -10px rgb(0 0 0 / 0.6);
+  backdrop-filter: blur(16px);
+  color: var(--color-ink);
+  z-index: 60;
+}
