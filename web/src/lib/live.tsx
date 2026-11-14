@@ -22,6 +22,21 @@ export interface RiskData { cellDeg: number; years: [number, number]; cells: [nu
 export type RiskLevel = 'high' | 'elevated' | 'low'
 export interface RiskCell { lat: number; lon: number; p: number; level: RiskLevel }
 
+// AI research index (teammate's model; see pipeline/ai/README_AR.md). Not a wildfire probability.
+export type AILevel = 'low' | 'elevated' | 'high'
+export interface AICell { lat: number; lon: number; scoreIndex: number | null; level: AILevel | null; weather: Record<string, number>; code?: string }
+export interface AIGrid {
+  status: 'experimental'; generatedAt: string; modelVersion: string; weatherDateUTC: string; targetDateUTC: string
+  targetStartSaudi: string; targetEndSaudi: string; cellSize: { lat: number; lon: number }
+  levels: { id: AILevel; label: string; min: number; observed2025: number }[]; cells: AICell[]; source: string; isMock: false
+}
+/** The AI cell (0.5° × 0.625°) containing a point, if it is one of the 29 trained cells. */
+export function aiCellAt(grid: AIGrid | null, lat: number, lon: number): AICell | null {
+  if (!grid) return null
+  const la = Math.floor(lat / 0.5 + 0.5) * 0.5, lo = Math.floor(lon / 0.625 + 0.5) * 0.625
+  return grid.cells.find((c) => c.lat === la && c.lon === lo) ?? null
+}
+
 export const SOURCE_OPTIONS = [
   { id: 'VIIRS_NOAA20_NRT,VIIRS_NOAA21_NRT', label: 'VIIRS (NOAA-20/21)' },
   { id: 'VIIRS_NOAA20_NRT,VIIRS_NOAA21_NRT,MODIS_NRT', label: 'MODIS / VIIRS' },
@@ -149,6 +164,7 @@ interface LiveCtx {
   sources: string; setSources: (s: string) => void
   days: number; setDays: (d: number) => void
   firms: FirmsResp | null; loading: boolean; error: string | null; reload: () => void
+  ai: AIGrid | null; aiError: string | null; aiLoading: boolean
   clusters: Cluster[]; staticClusters: Cluster[]; risk: RiskCell[]; riskYears: [number, number] | null; month: number
   regions: FeatureCollection<Geometry, RegionProps> | null
   focus: { lat: number; lon: number; label: string } | null; setFocus: (f: { lat: number; lon: number; label: string }) => void
@@ -170,6 +186,7 @@ export function LiveProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
   const { data: regions } = useJSON<FeatureCollection<Geometry, RegionProps>>('/data/regions.geojson')
   const { data: riskRaw } = useJSON<RiskData>('/data/risk.json')
+  const { data: ai, error: aiError, loading: aiLoading } = useJSON<AIGrid>('/api/ai-predict?grid=1')
   const month = new Date().getUTCMonth()
 
   useEffect(() => {
@@ -314,7 +331,7 @@ export function LiveProvider({ children }: { children: ReactNode }) {
 
   const value: LiveCtx = {
     sources, setSources, days, setDays, firms, loading, error, reload: () => setNonce((n) => n + 1),
-    clusters, staticClusters, risk, riskYears: riskRaw?.years ?? null, month, regions, focus, setFocus, simNow, tick,
+    ai, aiError, aiLoading, clusters, staticClusters, risk, riskYears: riskRaw?.years ?? null, month, regions, focus, setFocus, simNow, tick,
     missions, drones, autoResponse,
     setAutoResponse: (b) => { setAutoResponse(b); addLog(`Auto-response ${b ? 'enabled' : 'disabled'} by operator.`, 'info') },
     deploySquadron: (s) => {

@@ -27,7 +27,7 @@ export default function App() {
           <Header onPalette={() => setPalette(true)} />
           <main id="main" className="relative z-10 mx-auto max-w-[1680px] pt-6 md:pt-0">
             {view === 'overview' && (<><Hero /><OverviewView /></>)}
-            {(view === 'calendar' || view === 'method') && (
+            {(view === 'calendar' || view === 'method' || view === 'aimodel') && (
               <Suspense fallback={<div className="px-8 py-20 text-center text-sm text-muted">Loading analytics…</div>}><AnalyticsView /></Suspense>
             )}
             {view === 'operations' && <OperationsView />}

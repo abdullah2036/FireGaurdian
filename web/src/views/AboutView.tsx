@@ -15,13 +15,14 @@ export function AboutView() {
         <Panel title="1 · Thermal space map">
           <ul className="grid gap-2 text-[13px] text-muted">
             <li><b className="text-red-400">Red</b>: active fires from NOAA-20/21 VIIRS (and optionally MODIS) via NASA FIRMS, with gas flares and industrial heat masked.</li>
-            <li><b className="text-orange-300">Orange/yellow</b>: risk zones. For now, how often each 25 km cell burned in this calendar month over 2012–2025. The AI ignition model replaces this layer later.</li>
+            <li><b className="text-orange-300">Orange/yellow</b>: seasonal risk baseline, how often each 25 km cell burned in this calendar month over 2012–2025.</li>
+            <li><b className="text-violet-300">Dashed cells (SW)</b>: the AI research index for tomorrow, coloured Low / Elevated / High.</li>
             <li><b className="text-emerald-300">Green</b>: cells with a fire history but low seasonal frequency.</li>
           </ul>
         </Panel>
         <Panel title="2 · Monitoring & prediction">
           <ul className="grid gap-2 text-[13px] text-muted">
-            <li><b className="text-ink">AI Fire Prediction</b>: reserved slot. It shows the harmonized seasonal baseline until the model is added.</li>
+            <li><b className="text-ink">AI Fire Prediction</b>: a teammate’s research model (logistic regression on NASA POWER weather) scores tomorrow for 29 cells in Jazan, Asir and Al Baha, as Low / Elevated / High with each level’s 2025 hit rate. It is roughly level with a seasonal baseline; see Analytics → AI model.</li>
             <li><b className="text-ink">Satellite thermal feed</b>: VIIRS shortwave-infrared imagery from NASA GIBS at each hotspot, with FIRMS pixel brightness temperature.</li>
             <li><b className="text-ink">Weather</b>: wind, humidity and temperature at the selected point from Meteomatics.</li>
           </ul>
@@ -39,6 +40,7 @@ export function AboutView() {
           <li><b className="text-ink">NASA FIRMS</b>: MODIS C6.1 and VIIRS C2 archive and NRT (historical record), NOAA-20/21 VIIRS and MODIS NRT through the Area API (live).</li>
           <li><b className="text-ink">NASA GIBS</b>: Blue Marble relief, daily VIIRS true-colour and SWIR imagery.</li>
           <li><b className="text-ink">GIHS v3.0</b>: global industrial heat sources used in the flare mask (Ma et al. 2024, CC BY 4.0).</li>
+          <li><b className="text-ink">NASA POWER</b>: daily weather inputs for the AI research model.</li>
           <li><b className="text-ink">Meteomatics</b>: point weather. <b className="text-ink">Natural Earth</b>: boundaries.</li>
         </ul>
       </Panel>

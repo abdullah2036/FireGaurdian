@@ -1,0 +1,157 @@
+{
+  "training": "2020\u20132023",
+  "calibration": "2024",
+  "retrospective_test": "2025",
+  "weather_utc_day_to_target_utc_day": 3,
+  "note": "2025 was inspected in previous research. This is a retrospective research evaluation, not a new pristine final test. No ground-confirmed non-fire labels.",
+  "splits": {
+    "calibration_2024": {
+      "model": {
+        "rows": 10614,
+        "positives": 120,
+        "observed_rate": 0.011305822498586773,
+        "mean_score": 0.01125950474299282,
+        "brier": 0.010734027144648082,
+        "log_loss": 0.05137303519056589,
+        "average_precision": 0.0753233380539461,
+        "top_10_percent_selected": 1062,
+        "top_10_percent_positives": 66
+      },
+      "baseline": {
+        "rows": 10614,
+        "positives": 120,
+        "observed_rate": 0.011305822498586773,
+        "mean_score": 0.01787935938523491,
+        "brier": 0.010790588713450296,
+        "log_loss": 0.054321478029896474,
+        "average_precision": 0.08175642368599857,
+        "top_10_percent_selected": 1062,
+        "top_10_percent_positives": 62
+      },
+      "bins": [
+        {
+          "from": 0,
+          "to": 0.01,
+          "n": 7943,
+          "model_mean": 0.003946662866868286,
+          "observed": 0.0035251164547400226,
+          "positives": 28
+        },
+        {
+          "from": 0.01,
+          "to": 0.02,
+          "n": 1493,
+          "model_mean": 0.014254233145937151,
+          "observed": 0.016075016744809108,
+          "positives": 24
+        },
+        {
+          "from": 0.02,
+          "to": 0.05,
+          "n": 817,
+          "model_mean": 0.027578179532324228,
+          "observed": 0.03427172582619339,
+          "positives": 28
+        },
+        {
+          "from": 0.05,
+          "to": 0.1,
+          "n": 111,
+          "model_mean": 0.07317846570335217,
+          "observed": 0.02702702702702703,
+          "positives": 3
+        },
+        {
+          "from": 0.1,
+          "to": 0.2,
+          "n": 235,
+          "model_mean": 0.14030816880386815,
+          "observed": 0.15319148936170213,
+          "positives": 36
+        },
+        {
+          "from": 0.2,
+          "to": 1,
+          "n": 15,
+          "model_mean": 0.2167912042544567,
+          "observed": 0.06666666666666667,
+          "positives": 1
+        }
+      ]
+    },
+    "test_2025": {
+      "model": {
+        "rows": 10585,
+        "positives": 171,
+        "observed_rate": 0.01615493623051488,
+        "mean_score": 0.012934253243816146,
+        "brier": 0.01584033867959144,
+        "log_loss": 0.07842052157242962,
+        "average_precision": 0.04986588706801709,
+        "top_10_percent_selected": 1059,
+        "top_10_percent_positives": 52
+      },
+      "baseline": {
+        "rows": 10585,
+        "positives": 171,
+        "observed_rate": 0.01615493623051488,
+        "mean_score": 0.017859788077285707,
+        "brier": 0.01592793554267884,
+        "log_loss": 0.08084993479817593,
+        "average_precision": 0.04580022755049329,
+        "top_10_percent_selected": 1059,
+        "top_10_percent_positives": 57
+      },
+      "bins": [
+        {
+          "from": 0,
+          "to": 0.01,
+          "n": 7396,
+          "model_mean": 0.004236212346594893,
+          "observed": 0.008518117901568416,
+          "positives": 63
+        },
+        {
+          "from": 0.01,
+          "to": 0.02,
+          "n": 1662,
+          "model_mean": 0.014017572094089875,
+          "observed": 0.026474127557160047,
+          "positives": 44
+        },
+        {
+          "from": 0.02,
+          "to": 0.05,
+          "n": 1156,
+          "model_mean": 0.028300288250927088,
+          "observed": 0.031141868512110725,
+          "positives": 36
+        },
+        {
+          "from": 0.05,
+          "to": 0.1,
+          "n": 100,
+          "model_mean": 0.07600691960436831,
+          "observed": 0.07,
+          "positives": 7
+        },
+        {
+          "from": 0.1,
+          "to": 0.2,
+          "n": 249,
+          "model_mean": 0.14923862387837553,
+          "observed": 0.07228915662650602,
+          "positives": 18
+        },
+        {
+          "from": 0.2,
+          "to": 1,
+          "n": 22,
+          "model_mean": 0.21839076026257453,
+          "observed": 0.13636363636363635,
+          "positives": 3
+        }
+      ]
+    }
+  }
+}

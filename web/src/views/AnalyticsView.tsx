@@ -4,6 +4,7 @@ import { useApp } from '@/lib/store'
 import { AnalyticsToolbar } from '@/components/TopBar'
 import { CalendarView } from './CalendarView'
 import { MethodView } from './MethodView'
+import { AIModelView } from './AIModelView'
 import { cn } from '@/lib/utils'
 
 export function AnalyticsView() {
@@ -11,6 +12,7 @@ export function AnalyticsView() {
   const tabs = [
     { id: 'calendar', label: 'Burning calendar' },
     { id: 'method', label: 'Harmonization & validation' },
+    { id: 'aimodel', label: 'AI model' },
   ] as const
   return (
     <div className="grid gap-4 px-4 pt-4 sm:px-8">
@@ -26,8 +28,8 @@ export function AnalyticsView() {
           ))}
         </div>
       </div>
-      <AnalyticsToolbar />
-      <div key={view}>{view === 'method' ? <MethodView /> : <CalendarView />}</div>
+      {view !== 'aimodel' && <AnalyticsToolbar />}
+      <div key={view}>{view === 'method' ? <MethodView /> : view === 'aimodel' ? <AIModelView /> : <CalendarView />}</div>
     </div>
   )
 }

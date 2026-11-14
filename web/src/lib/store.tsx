@@ -11,7 +11,7 @@ export interface AppState {
   mode: Mode
 }
 
-const VIEWS: ViewId[] = ['overview', 'calendar', 'method', 'operations', 'about']
+const VIEWS: ViewId[] = ['overview', 'calendar', 'method', 'aimodel', 'operations', 'about']
 export const DEFAULT_FROM = '2001-01'
 export const DEFAULT_TO = '2026-11'
 

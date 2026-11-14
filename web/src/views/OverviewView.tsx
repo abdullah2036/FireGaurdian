@@ -1,11 +1,12 @@
 // Overview: the three-column mission dashboard.
-//   Left   — AI prediction slot (seasonal baseline for now), satellite thermal feed, weather
+//   Left   — AI research index (teammate's model, SW pilot), satellite thermal feed, weather
 //   Centre — thermal space map: active fires (red), risk zones (orange/yellow), safe zones (green)
 //   Right  — drone fleet command (simulation), drone feed, response controls, alerts
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
 import { FireMap } from '@/components/FireMap'
+import { ExperimentalForecast } from '@/components/ExperimentalForecast'
 import {
-  AIPredictionCard, AlertsCard, ControlsCard, DroneFeedCard, EmergencyBar, FleetCard, ThermalFeedCard, WeatherCard,
+  AlertsCard, ControlsCard, DroneFeedCard, EmergencyBar, FleetCard, ThermalFeedCard, WeatherCard,
 } from '@/components/panels'
 
 export function OverviewView() {
@@ -13,7 +14,7 @@ export function OverviewView() {
     <div className="grid gap-4 px-4 sm:px-8">
       <div className="grid gap-4 xl:grid-cols-[300px_minmax(0,1fr)_330px] lg:grid-cols-[290px_minmax(0,1fr)]">
         <div className="grid content-start gap-4 fade-up">
-          <AIPredictionCard />
+          <ExperimentalForecast />
           <ThermalFeedCard />
           <WeatherCard />
         </div>

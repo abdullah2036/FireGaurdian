@@ -34,7 +34,7 @@ export function FireMap({ className }: { className?: string }) {
   const map = useRef<MLMap | null>(null)
   const [ready, setReady] = useState(false)
   const [basemap, setBasemap] = useState<BasemapId>('bluemarble')
-  const [show, setShow] = useState({ risk: true, fires: true, flares: true, drones: true, safe: true })
+  const [show, setShow] = useState({ ai: true, risk: true, fires: true, flares: true, drones: true, safe: true })
   const [bounds, setBounds] = useState<[number, number, number, number] | null>(null)
   const clusterMarkers = useRef<Marker[]>([])
   const droneMarkers = useRef<Map<string, Marker>>(new Map())
@@ -68,7 +68,7 @@ export function FireMap({ className }: { className?: string }) {
     m.touchZoomRotate.disableRotation()
     m.on('load', () => {
       const empty: FeatureCollection = { type: 'FeatureCollection', features: [] }
-      for (const id of ['regions', 'risk', 'fires', 'flares', 'missions']) m.addSource(id, { type: 'geojson', data: empty })
+      for (const id of ['regions', 'risk', 'fires', 'flares', 'missions', 'ai']) m.addSource(id, { type: 'geojson', data: empty })
       m.addLayer({ id: 'safe', type: 'fill', source: 'risk', filter: ['==', ['get', 'level'], 'low'], paint: { 'fill-color': '#34d399', 'fill-opacity': 0.12 } })
       m.addLayer({
         id: 'risk-heat', type: 'heatmap', source: 'risk', filter: ['!=', ['get', 'level'], 'low'],
@@ -93,6 +93,12 @@ export function FireMap({ className }: { className?: string }) {
             0, 'rgba(0,0,0,0)', 0.1, 'rgba(127,29,29,0.35)', 0.4, 'rgba(220,38,38,0.65)', 0.7, 'rgba(239,68,68,0.85)', 1, 'rgba(254,202,202,0.95)'],
         },
       })
+      m.addLayer({
+        id: 'ai-fill', type: 'fill', source: 'ai',
+        paint: { 'fill-color': ['match', ['get', 'level'], 'high', '#ef4444', 'elevated', '#fbbf24', 'low', '#34d399', '#64748b'],
+          'fill-opacity': ['match', ['get', 'level'], 'high', 0.42, 'elevated', 0.3, 'low', 0.1, 0.05] },
+      })
+      m.addLayer({ id: 'ai-line', type: 'line', source: 'ai', paint: { 'line-color': 'rgba(196,181,253,0.75)', 'line-width': 0.8, 'line-dasharray': [3, 2] } })
       m.addLayer({ id: 'provinces', type: 'line', source: 'regions', filter: ['==', ['get', 'kind'], 'province'], paint: { 'line-color': 'rgba(255,255,255,0.22)', 'line-width': 0.7 } })
       m.addLayer({ id: 'ksa-glow', type: 'line', source: 'regions', filter: ['==', ['get', 'id'], 'ksa'], paint: { 'line-color': 'rgba(255,255,255,0.25)', 'line-width': 5, 'line-blur': 4 } })
       m.addLayer({ id: 'ksa', type: 'line', source: 'regions', filter: ['==', ['get', 'id'], 'ksa'], paint: { 'line-color': 'rgba(255,255,255,0.75)', 'line-width': 1.2 } })
@@ -113,6 +119,8 @@ export function FireMap({ className }: { className?: string }) {
 
     const popup = new maplibregl.Popup({ closeButton: false, className: 'fg-popup', maxWidth: '260px' })
     m.on('click', 'risk-hit', (e) => {
+      // The AI pilot layer sits on top; let its own handler answer clicks inside a pilot cell.
+      if (m.getLayer('ai-fill') && m.queryRenderedFeatures(e.point, { layers: ['ai-fill'] }).length) return
       const f = e.features?.[0]
       if (!f) return
       const p = f.properties as { p: number; level: string }
@@ -122,6 +130,19 @@ export function FireMap({ className }: { className?: string }) {
       ).addTo(m)
       live.setFocus({ lat: e.lngLat.lat, lon: e.lngLat.lng, label: `${name} · ${e.lngLat.lat.toFixed(2)}°N ${e.lngLat.lng.toFixed(2)}°E` })
     })
+    m.on('click', 'ai-fill', (e) => {
+      const f = e.features?.[0]
+      if (!f) return
+      const p = f.properties as { lat: number; lon: number; scoreIndex: number | null; label: string }
+      popup.setLngLat(e.lngLat).setHTML(
+        p.scoreIndex == null
+          ? `<b>AI pilot cell</b><br/><span class="muted">No index: NASA data missing or outside the model range.</span>`
+          : `<b>AI research index: ${Number(p.scoreIndex).toFixed(1)} / 100 · ${p.label}</b><br/><span class="muted">Cell ${p.lat}°N ${p.lon}°E (0.5° × 0.625°), tomorrow (Saudi time)</span><br/><span class="faint">Teammate's model on NASA POWER weather · not a wildfire probability</span>`,
+      ).addTo(m)
+      live.setFocus({ lat: p.lat, lon: p.lon, label: `AI pilot cell ${p.lat}°N ${p.lon}°E` })
+    })
+    m.on('mouseenter', 'ai-fill', () => (m.getCanvas().style.cursor = 'pointer'))
+    m.on('mouseleave', 'ai-fill', () => (m.getCanvas().style.cursor = ''))
     m.on('mouseenter', 'risk-hit', () => (m.getCanvas().style.cursor = 'pointer'))
     m.on('mouseleave', 'risk-hit', () => (m.getCanvas().style.cursor = ''))
     map.current = m
@@ -164,6 +185,19 @@ export function FireMap({ className }: { className?: string }) {
     ;(map.current!.getSource('flares') as GeoJSONSource).setData(fc(dets.filter((d) => d.static)))
   }, [ready, live.firms])
 
+  const aiFC = useMemo<FeatureCollection>(() => ({
+    type: 'FeatureCollection',
+    features: (live.ai?.cells ?? []).map((c) => ({
+      type: 'Feature',
+      properties: { lat: c.lat, lon: c.lon, scoreIndex: c.scoreIndex, level: c.level ?? 'none', label: live.ai!.levels.find((l) => l.id === c.level)?.label ?? '—' },
+      geometry: { type: 'Polygon', coordinates: [[[c.lon - 0.3125, c.lat - 0.25], [c.lon + 0.3125, c.lat - 0.25], [c.lon + 0.3125, c.lat + 0.25], [c.lon - 0.3125, c.lat + 0.25], [c.lon - 0.3125, c.lat - 0.25]]] },
+    })),
+  }), [live.ai])
+  useEffect(() => {
+    if (!ready) return
+    ;(map.current!.getSource('ai') as GeoJSONSource).setData(aiFC)
+  }, [ready, aiFC])
+
   // ---- layer visibility ----
   useEffect(() => {
     const m = map.current
@@ -171,6 +205,7 @@ export function FireMap({ className }: { className?: string }) {
     const vis = (ids: string[], on: boolean) => ids.forEach((id) => m.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none'))
     vis(['risk-heat', 'risk-hit'], show.risk)
     vis(['safe'], show.safe)
+    vis(['ai-fill', 'ai-line'], show.ai)
     vis(['fire-heat', 'fire-pts'], show.fires)
     vis(['flares'], show.flares)
     vis(['missions'], show.drones)
@@ -304,7 +339,7 @@ export function FireMap({ className }: { className?: string }) {
               <label key={b} className="flex cursor-pointer items-center gap-2 py-1"><input type="radio" name="bm" checked={basemap === b} onChange={() => setBasemap(b)} className="accent-cyan-400" />{BASEMAPS[b].label}</label>
             ))}
             <div className="label mb-1.5 mt-3">Overlays</div>
-            {([['fires', 'Active fires (red)'], ['risk', 'Risk zones (orange/yellow)'], ['safe', 'Safe zones (green)'], ['drones', 'Drone fleet (simulation)'], ['flares', 'Masked flares / industry']] as const).map(([k, l]) => (
+            {([['fires', 'Active fires (red)'], ['ai', 'AI research index · SW pilot'], ['risk', 'Seasonal risk baseline (orange/yellow)'], ['safe', 'Safe zones (green)'], ['drones', 'Drone fleet (simulation)'], ['flares', 'Masked flares / industry']] as const).map(([k, l]) => (
               <label key={k} className="flex cursor-pointer items-center gap-2 py-1"><input type="checkbox" checked={show[k]} onChange={(e) => setShow((s) => ({ ...s, [k]: e.target.checked }))} className="accent-cyan-400" />{l}</label>
             ))}
           </PopoverContent>
@@ -362,6 +397,14 @@ export function FireMap({ className }: { className?: string }) {
           <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-orange-400" />Sqn A</span>
           <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-cyan" />Sqn B</span>
         </div>
+        {show.ai && live.ai && (
+          <div className="mt-1.5 flex items-center gap-2 text-faint">
+            <span className="h-2.5 w-3.5 border border-dashed border-violet-300/80" />AI index:
+            <span className="inline-flex items-center gap-1"><span className="h-2 w-2 bg-emerald-400/60" />Low</span>
+            <span className="inline-flex items-center gap-1"><span className="h-2 w-2 bg-amber-400/80" />Elev.</span>
+            <span className="inline-flex items-center gap-1"><span className="h-2 w-2 bg-red-500/80" />High</span>
+          </div>
+        )}
       </div>
 
       {/* mini map */}

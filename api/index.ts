@@ -5,6 +5,7 @@ import express from 'express'
 import firms from './handlers/firms.js'
 import weather from './handlers/weather.js'
 import health from './handlers/health.js'
+import aiPredict from './handlers/ai-predict.js'
 import type { Req, Res } from './lib/http.js'
 
 type Handler = (req: Req, res: Res) => unknown
@@ -17,6 +18,7 @@ app.disable('x-powered-by')
 app.get('/api/firms', wrap(firms))
 app.get('/api/weather', wrap(weather))
 app.get('/api/health', wrap(health))
+app.get('/api/ai-predict', wrap(aiPredict))
 app.use('/api', (_req, res) => { res.status(404).json({ error: 'unknown API route' }) })
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   res.status(500).json({ error: String((err as Error)?.message ?? err) })

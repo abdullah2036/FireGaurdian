@@ -1,6 +1,6 @@
 // Fire Guardian shell: top navigation, Overview hero, footer.
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
-import { BarChart3, Info, LayoutDashboard, Plane, Search, FlaskConical, type LucideIcon } from 'lucide-react'
+import { BarChart3, BrainCircuit, Info, LayoutDashboard, Plane, Search, FlaskConical, type LucideIcon } from 'lucide-react'
 import type { ViewId } from '@/lib/types'
 import { useApp } from '@/lib/store'
 import { useLive } from '@/lib/live'
@@ -11,6 +11,7 @@ export const VIEW_META: { id: ViewId; label: string; icon: LucideIcon; hint: str
   { id: 'overview', label: 'Overview', icon: LayoutDashboard, hint: 'Live map, risk zones, drone fleet', nav: true },
   { id: 'calendar', label: 'Analytics', icon: BarChart3, hint: 'Harmonized MODIS + VIIRS burning calendar', nav: true },
   { id: 'method', label: 'Harmonization & validation', icon: FlaskConical, hint: 'Method, ratios, leave-one-year-out, flare mask' },
+  { id: 'aimodel', label: 'AI model validation', icon: BrainCircuit, hint: 'Research model: inputs, coverage, 2024/2025 validation vs baseline' },
   { id: 'operations', label: 'Operations', icon: Plane, hint: 'Drone fleet, missions, alerts, .plan export', nav: true },
   { id: 'about', label: 'About', icon: Info, hint: 'Project, data sources, credits, AI use', nav: true },
 ]
@@ -27,7 +28,7 @@ export function Logo({ size = 26 }: { size?: number }) {
 export function Header({ onPalette }: { onPalette: () => void }) {
   const { view, set } = useApp()
   const { firms, loading, error } = useLive()
-  const active = view === 'method' ? 'calendar' : view
+  const active = view === 'method' || view === 'aimodel' ? 'calendar' : view
   const liveState = error ? 'Offline' : loading && !firms ? 'Connecting' : firms?.mock ? 'Mock data' : 'Live'
   return (
     <header className="relative z-20 flex h-[72px] items-center gap-6 px-4 sm:px-8">
