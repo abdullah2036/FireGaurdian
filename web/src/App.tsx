@@ -1,4 +1,4 @@
-// App shell: Fire Guardian top navigation, Overview hero, active view, footer.
+// App shell: phones get MobileShell; larger screens get top navigation, hero, active view, footer.
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
 import { lazy, Suspense, useState } from 'react'
 import { useApp } from '@/lib/store'
@@ -10,6 +10,8 @@ import { TooltipProvider } from '@/components/ui'
 import { OverviewView } from '@/views/OverviewView'
 import { OperationsView } from '@/views/OperationsView'
 import { AboutView } from '@/views/AboutView'
+import { MobileShell } from '@/components/mobile/MobileShell'
+import { useIsPhone } from '@/lib/useMedia'
 
 // Analytics pulls in ECharts; load it on demand so the Overview opens fast.
 const AnalyticsView = lazy(() => import('@/views/AnalyticsView').then((m) => ({ default: m.AnalyticsView })))
@@ -17,6 +19,14 @@ const AnalyticsView = lazy(() => import('@/views/AnalyticsView').then((m) => ({ 
 export default function App() {
   const { view } = useApp()
   const [palette, setPalette] = useState(false)
+  const phone = useIsPhone()
+  if (phone) return (
+    <TooltipProvider>
+      <LiveProvider>
+        <MobileShell />
+      </LiveProvider>
+    </TooltipProvider>
+  )
   return (
     <TooltipProvider>
       <LiveProvider>

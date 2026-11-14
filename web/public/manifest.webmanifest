@@ -1,0 +1,10 @@
+{
+  "name": "Fire Guardian",
+  "short_name": "Fire Guardian",
+  "description": "Live wildfire monitoring for Saudi Arabia from NASA satellites.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05070c",
+  "theme_color": "#05070c",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

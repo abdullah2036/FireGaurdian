@@ -136,3 +136,27 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .fg-flame-big, .fg-kenburns, .fg-drone[data-status="Active"] .fg-drone-dot { animation: none; }
 }
+
+/* ---------- v3: simplified map, phone shell, Arabic ---------- */
+.fg-fire {
+  position: relative; display: grid; place-items: center; border-radius: 999px; color: #fff; cursor: pointer;
+  background: radial-gradient(circle at 50% 40%, #f87171 0%, #dc2626 65%, #991b1b 100%);
+  border: 2px solid #fff; box-shadow: 0 0 14px 4px rgb(239 68 68 / 0.55);
+}
+.fg-fire-ring { position: absolute; inset: -2px; border-radius: 999px; border: 2px solid rgb(248 113 113 / 0.9); animation: fg-ring 2s ease-out infinite; pointer-events: none; }
+@keyframes fg-ring { from { transform: scale(1); opacity: 0.9; } to { transform: scale(2.4); opacity: 0; } }
+.fg-sel { width: 26px; height: 26px; border-radius: 999px; border: 2.5px solid #22d3ee; box-shadow: 0 0 0 3px rgb(34 211 238 / 0.25), 0 0 16px 2px rgb(34 211 238 / 0.5); pointer-events: none; display: inline-block; }
+.fg-sel[data-kind="fire"] { width: 46px; height: 46px; }
+.no-scrollbar { scrollbar-width: none; } .no-scrollbar::-webkit-scrollbar { display: none; }
+
+html[lang="ar"] body { font-family: "IBM Plex Sans Arabic", var(--font-sans); }
+html[lang="ar"] .font-display { font-family: "IBM Plex Sans Arabic", var(--font-display); letter-spacing: 0; }
+html[lang="ar"] .label { letter-spacing: 0; }
+
+/* phones: full-bleed app feel */
+.fg-phone { min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
+.fg-phone button { touch-action: manipulation; }
+.fg-phone .maplibregl-ctrl-bottom-right { bottom: 176px; }
+@media (max-width: 767px) { body { overscroll-behavior-y: none; } }
+
+@media (prefers-reduced-motion: reduce) { .fg-fire-ring { animation: none; opacity: 0; } }

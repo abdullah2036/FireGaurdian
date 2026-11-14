@@ -12,6 +12,7 @@ import { useLive, FLEET, RANGE_KM, severityOf, type Cluster, type DroneState } f
 import { compass, haversineKm } from '@/lib/geo'
 import { MONTHS } from '@/lib/types'
 import { cn, fmt } from '@/lib/utils'
+import { useT } from '@/lib/i18n'
 
 // ---------- primitives ----------
 export function Card({ icon, title, right, children, className }: { icon: ReactNode; title: string; right?: ReactNode; children: ReactNode; className?: string }) {
@@ -82,7 +83,7 @@ export function AIPredictionCard() {
   )
 }
 
-function gibsSnapshot(layers: string, lat: number, lon: number, date: string, half = 0.18, w = 480, h = 270) {
+export function gibsSnapshot(layers: string, lat: number, lon: number, date: string, half = 0.18, w = 480, h = 270) {
   const dy = half * (h / w)
   const p = new URLSearchParams({
     SERVICE: 'WMS', REQUEST: 'GetMap', VERSION: '1.3.0', LAYERS: layers, CRS: 'EPSG:4326',
@@ -210,6 +211,7 @@ export function FleetCard() {
 
 export function DroneFeedCard() {
   const { drones, simNow } = useLive()
+  const { t } = useT()
   const d = drones.find((x) => x.status === 'Active' && x.mission?.kind !== 'cool') ?? drones.find((x) => x.status === 'Active') ?? drones.find((x) => x.status === 'Deploying')
   // Aerial still for the simulated camera: Sentinel-2 cloudless 10 m mosaic (EOX), centred on the drone.
   const snap = d?.mission && aerialStill(d.mission.target.lat, d.mission.target.lon)
@@ -218,7 +220,7 @@ export function DroneFeedCard() {
   return (
     <section className="fg-card overflow-hidden p-0">
       <div className="relative aspect-[16/9] bg-black">
-        {snap ? <img src={snap.url} alt="" className="fg-kenburns h-full w-full object-cover opacity-80" /> : <div className="grid h-full place-items-center text-xs text-muted">No drone airborne.</div>}
+        {snap ? <img src={snap.url} alt="" className="fg-kenburns h-full w-full object-cover opacity-80" /> : <div className="grid h-full place-items-center text-xs text-muted">{t('drones.noneAirborne')}</div>}
         {d && (
           <div className="fg-hud absolute inset-0 p-2.5 text-[10.5px] num">
             <div className="flex justify-between"><span><span className="mr-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />SIM · {d.drone.id} · {d.drone.model.split(' ')[0]}</span><Pill tone={onTarget ? 'green' : 'amber'}>{onTarget ? 'On target' : 'In flight'}</Pill></div>
@@ -244,7 +246,7 @@ export function DroneFeedCard() {
         </div>
         {d?.mission && <div className="flex shrink-0 gap-3 text-muted num"><span className="inline-flex items-center gap-1"><Navigation size={12} />{d.mission.distKm.toFixed(0)} km</span></div>}
       </div>
-      <div className="border-t border-line px-4 py-1.5 text-[10px] text-faint">Simulated feed: Sentinel-2 cloudless still (EOX, Copernicus data) with drone HUD. No live camera; hardware not tested.</div>
+      <div className="border-t border-line px-4 py-1.5 text-[10px] text-faint">{t('drones.feedNote')} <span dir="ltr">Sentinel-2 cloudless © EOX (Copernicus).</span></div>
     </section>
   )
 }
@@ -269,26 +271,27 @@ function Bar({ label, v, color }: { label: string; v: number; color: string }) {
 
 export function ControlsCard() {
   const { autoResponse, setAutoResponse, deploySquadron } = useLive()
+  const { t } = useT()
   const [msg, setMsg] = useState<string | null>(null)
   const deploy = (s: 'A' | 'B') => {
     const n = deploySquadron(s)
-    setMsg(n ? `Squadron ${s}: ${n} drone(s) dispatched.` : `Squadron ${s}: no standby drone in range of an unserved target.`)
+    setMsg(n ? t('drones.sent', { n }) : t('drones.noneFree'))
     setTimeout(() => setMsg(null), 4000)
   }
   return (
     <section className="fg-card p-3">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <button role="switch" aria-checked={autoResponse} onClick={() => setAutoResponse(!autoResponse)}
           className={cn('inline-flex h-9 flex-1 items-center justify-between gap-2 rounded-lg border px-3 text-[12.5px] cursor-pointer',
             autoResponse ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-300' : 'border-line-strong text-muted')}>
-          <span className="inline-flex items-center gap-1.5"><Power size={14} /> Auto-Response</span>
-          <span className="font-medium">{autoResponse ? 'Active' : 'Off'}</span>
+          <span className="inline-flex items-center gap-1.5"><Power size={14} /> {t('drones.auto')}</span>
+          <span className="font-medium">{autoResponse ? t('drones.on') : t('drones.off')}</span>
         </button>
         <button onClick={() => deploy('A')} className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-red-500/90 px-3 text-[12.5px] font-medium text-white hover:bg-red-500 cursor-pointer shadow-[0_0_24px_-6px_rgba(239,68,68,0.8)]">
-          <Rocket size={14} /> Deploy Sqn A
+          <Rocket size={14} /> {t('drones.deployA')}
         </button>
         <button onClick={() => deploy('B')} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-cyan/40 bg-cyan-soft px-2.5 text-[12.5px] text-cyan cursor-pointer" aria-label="Deploy Squadron B (preventive cooling)">
-          Sqn B
+          {t('drones.deployB')}
         </button>
       </div>
       {msg && <div role="status" className="mt-2 text-[11.5px] text-muted">{msg}</div>}

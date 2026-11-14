@@ -39,7 +39,7 @@ export function CalendarView() {
             <>
               <RampLegend max={max} scale={scale} />
               <Tip side="bottom" label="Display options"><Button variant="ghost" aria-label="Display options" onClick={() => setDrawer(true)}><SlidersHorizontal size={15} /></Button></Tip>
-              <Button onClick={() => downloadText(`novashift_${data.id}_${from}_${to}_monthly.csv`, calendarCSV(data, from, to))}>
+              <Button onClick={() => downloadText(`fireguardian_${data.id}_${from}_${to}_monthly.csv`, calendarCSV(data, from, to))}>
                 <Download size={15} /> CSV
               </Button>
             </>

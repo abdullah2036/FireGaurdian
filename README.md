@@ -4,19 +4,25 @@
 
 Fire Guardian monitors wildfires across Saudi Arabia. Its foundation is **one consistent monthly burning-activity record** built by harmonizing MODIS (1 km, 2001→) and VIIRS (375 m, 2012→) hotspots from NASA FIRMS, with gas flares and industrial heat masked out. On top of that record it shows live fires, flags high-risk areas and simulates a drone response.
 
-| Section | What it shows |
-|---|---|
-| **Overview · thermal space map** (centre) | NASA GIBS basemap. **Red**: active fires from NOAA-20/21 VIIRS (optionally MODIS) via FIRMS, flares masked. **Orange/yellow**: risk zones. **Green**: low-risk cells. Drone bases, flights and mission lines |
-| **Overview · monitoring & prediction** (left) | **AI Fire Prediction**: reserved slot for the upcoming model, showing the harmonized seasonal baseline meanwhile. **Satellite thermal feed**: VIIRS SWIR imagery from GIBS at each hotspot, with FIRMS brightness temperature. **Weather**: wind, humidity and temperature from Meteomatics |
-| **Overview · drone fleet command** (right) | 18 simulated drones. Squadron A attempts suppression; Squadron B sprays preventive coolant on risk zones. Fleet status, simulated drone feed, Auto-Response toggle, manual squadron launch, system alerts, emergency level bar |
-| **Analytics** | Harmonized burning calendar (year × month heatmap, peaks, anomalies, CSV) and the harmonization & validation report |
-| **Operations** | Full fleet table, mission log, QGroundControl `.plan` export per mission |
+**How the site works.** The map page shows one view at a time, picked by the user:
+
+| View | What the map shows | Side panel / phone sheet |
+|---|---|---|
+| **Live fires** (default) | Fires seen by NASA satellites (NOAA-20/21 VIIRS via FIRMS, flares filtered), as pulsing flame icons sized by strength. Optional: show the filtered industrial heat in grey | Fire count with a 24 h / 2 days / 5 days switch, fire list, selected fire with the VIIRS infrared image, weather |
+| **Forecast** | Where fires are common this month (glow) and tomorrow's AI index for the southwest pilot (dashed squares: Low / Medium / High) | AI summary for tomorrow with its 2025 hit rate, top provinces this month, weather |
+| **Danger zones** | Only the most dangerous areas: fires burning now, places that burn most years this month, AI "high" cells | Count and lists of each, weather |
+
+Tapping a fire, an area or anywhere on the map selects it, and the weather and details follow the selection. **Analytics** holds the harmonized fire calendar, the harmonization validation and the AI model page. **Drones** holds the drone-response simulation (map with flights, simulated camera, fleet, mission log, QGroundControl `.plan` export).
+
+**Phones.** On screens narrower than 768 px (or short touch screens in landscape) the app switches to a phone layout: full-screen map, view chips, a draggable bottom sheet and a bottom tab bar (`web/src/components/mobile/MobileShell.tsx`). It can also be added to the home screen (web manifest).
+
+**Languages.** English and Arabic, with right-to-left layout in Arabic, from one file: `web/src/lib/i18n.tsx`. The detailed Analytics charts stay in English. To go English-only, remove `<LangToggle />` from `Shell.tsx` and `MobileShell.tsx`.
 
 **Risk layers.**
 - *Seasonal baseline* (all KSA, orange/yellow): for each 0.25° cell, the share of years (2012–2025) with at least one flare-masked hotspot in the current calendar month (`web/public/data/risk.json`, ≥ 50 % = high, ≥ 20 % = elevated).
 - *AI research index* (SW pilot, dashed cells): a teammate's logistic-regression model on NASA POWER weather scores **tomorrow** (03:00–03:00 Saudi time) for 29 cells of 0.5° × 0.625° in Jazan, Asir and Al Baha. It predicts whether a cell will have a flare-filtered VIIRS vegetation detection, using weather from 3 days earlier because of NASA POWER's publishing delay. Shown as Low (< 1) / Elevated (≥ 1) / High (≥ 5) with each level's observed 2025 hit rate (0.9 % / 2.8 % / 7.5 %). It is **not** a wildfire probability. On the 2025 retrospective test it is roughly level with the seasonal baseline: average precision 0.050 vs 0.046, and 52 vs 57 detections caught in the top 10 %. Details are in Analytics → AI model and `pipeline/ai/` (README_AR.md, train_model.py, results/, test_integration.mjs).
 
-**Drone simulation.** Bases are illustrative staging points at regional cities. Cruise speed is 110 km/h, range 180 km, and the clock runs ×30. Nothing has been tested on hardware.
+**Drone simulation** (Drones page only). Bases are illustrative staging points at regional cities. Cruise speed is 110 km/h, range 180 km, and the clock runs ×30. Nothing has been tested on hardware.
 
 ## Key results (Saudi Arabia, flares masked)
 

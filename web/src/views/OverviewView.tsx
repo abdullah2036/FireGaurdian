@@ -1,32 +1,26 @@
-// Overview: the three-column mission dashboard.
-//   Left   — AI research index (teammate's model, SW pilot), satellite thermal feed, weather
-//   Centre — thermal space map: active fires (red), risk zones (orange/yellow), safe zones (green)
-//   Right  — drone fleet command (simulation), drone feed, response controls, alerts
+// Map page (desktop): pick a view (Live fires / Forecast / Danger zones), see only that on the map,
+// with a matching legend and a side panel. Drones live on their own page.
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
+import { useState } from 'react'
+import { useApp } from '@/lib/store'
 import { FireMap } from '@/components/FireMap'
-import { ExperimentalForecast } from '@/components/ExperimentalForecast'
-import {
-  AlertsCard, ControlsCard, DroneFeedCard, EmergencyBar, FleetCard, ThermalFeedCard, WeatherCard,
-} from '@/components/panels'
+import { Legend, ModePanel, ModeSwitch } from '@/components/MapPanels'
 
 export function OverviewView() {
+  const { layer } = useApp()
+  const [showFlares, setShowFlares] = useState(false)
   return (
     <div className="grid gap-4 px-4 sm:px-8">
-      <div className="grid gap-4 xl:grid-cols-[300px_minmax(0,1fr)_330px] lg:grid-cols-[290px_minmax(0,1fr)]">
-        <div className="grid content-start gap-4 fade-up">
-          <ExperimentalForecast />
-          <ThermalFeedCard />
-          <WeatherCard />
+      <ModeSwitch />
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="relative h-[calc(100vh-250px)] min-h-[540px] fade-up">
+          <FireMap mode={layer} showFlares={showFlares} className="h-full" />
+          <Legend mode={layer} showFlares={showFlares} className="pointer-events-none absolute bottom-3 start-3 z-10 max-w-[300px]" />
         </div>
-        <FireMap className="h-[560px] lg:h-auto lg:min-h-[680px] fade-up" />
-        <div className="grid content-start gap-4 fade-up lg:col-span-2 lg:grid-cols-2 xl:col-span-1 xl:grid-cols-1">
-          <FleetCard />
-          <DroneFeedCard />
-          <ControlsCard />
-          <AlertsCard />
-        </div>
+        <aside className="fade-up lg:h-[calc(100vh-250px)] lg:min-h-[540px] lg:overflow-y-auto lg:pe-1" aria-label="Details">
+          <ModePanel showFlares={showFlares} setShowFlares={setShowFlares} />
+        </aside>
       </div>
-      <EmergencyBar />
     </div>
   )
 }

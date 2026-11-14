@@ -4,11 +4,14 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
 import { AppProvider } from './lib/store'
+import { I18nProvider } from './lib/i18n'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AppProvider>
-      <App />
-    </AppProvider>
+    <I18nProvider>
+      <AppProvider>
+        <App />
+      </AppProvider>
+    </I18nProvider>
   </StrictMode>,
 )

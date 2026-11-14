@@ -9,7 +9,11 @@ export interface AppState {
   from: string
   to: string
   mode: Mode
+  /** Which map view the user picked: live fires, forecast or danger zones. */
+  layer: MapLayer
 }
+export type MapLayer = 'live' | 'forecast' | 'danger'
+const LAYERS: MapLayer[] = ['live', 'forecast', 'danger']
 
 const VIEWS: ViewId[] = ['overview', 'calendar', 'method', 'aimodel', 'operations', 'about']
 export const DEFAULT_FROM = '2001-01'
@@ -25,6 +29,7 @@ function parse(hash: string): AppState {
     from: p.get('from') ?? DEFAULT_FROM,
     to: p.get('to') ?? DEFAULT_TO,
     mode: p.get('mode') === 'raw' ? 'raw' : 'harmonized',
+    layer: (LAYERS.includes(p.get('map') as MapLayer) ? p.get('map') : 'live') as MapLayer,
   }
 }
 
@@ -33,6 +38,7 @@ function serialize(s: AppState): string {
   if (s.from !== DEFAULT_FROM) p.set('from', s.from)
   if (s.to !== DEFAULT_TO) p.set('to', s.to)
   if (s.mode === 'raw') p.set('mode', 'raw')
+  if (s.view === 'overview' && s.layer !== 'live') p.set('map', s.layer)
   return `#/${s.view}?${p.toString()}`
 }
 

@@ -160,6 +160,9 @@ export function severityOf(c: Cluster): 1 | 2 | 3 | 4 {
 }
 
 // ---------- context ----------
+/** What the user selected on the map. `label` is an English fallback; UIs build localized labels from kind/id. */
+export interface Focus { lat: number; lon: number; label: string; kind?: 'fire' | 'ai' | 'zone' | 'point'; id?: string }
+
 interface LiveCtx {
   sources: string; setSources: (s: string) => void
   days: number; setDays: (d: number) => void
@@ -167,7 +170,7 @@ interface LiveCtx {
   ai: AIGrid | null; aiError: string | null; aiLoading: boolean
   clusters: Cluster[]; staticClusters: Cluster[]; risk: RiskCell[]; riskYears: [number, number] | null; month: number
   regions: FeatureCollection<Geometry, RegionProps> | null
-  focus: { lat: number; lon: number; label: string } | null; setFocus: (f: { lat: number; lon: number; label: string }) => void
+  focus: Focus | null; setFocus: (f: Focus) => void
   simNow: () => number; tick: number
   missions: Mission[]; drones: DroneState[]
   autoResponse: boolean; setAutoResponse: (b: boolean) => void
@@ -213,10 +216,10 @@ export function LiveProvider({ children }: { children: ReactNode }) {
     [riskRaw, month],
   )
 
-  const [focusSel, setFocus] = useState<LiveCtx['focus']>(null)
-  const focus = focusSel ?? (clusters[0]
-    ? { lat: clusters[0].lat, lon: clusters[0].lon, label: `Hotspot ${clusters[0].id}${clusters[0].province ? ` · ${clusters[0].province}` : ''}` }
-    : { lat: 20.01, lon: 41.47, label: 'Al Baha' })
+  const [focusSel, setFocus] = useState<Focus | null>(null)
+  const focus: Focus = focusSel ?? (clusters[0]
+    ? { lat: clusters[0].lat, lon: clusters[0].lon, label: `Hotspot ${clusters[0].id}${clusters[0].province ? ` · ${clusters[0].province}` : ''}`, kind: 'fire', id: clusters[0].id }
+    : { lat: 20.01, lon: 41.47, label: 'Al Baha', kind: 'point' })
 
   // simulation clock
   const t0 = useRef({ real: performance.now(), sim: Date.now() })

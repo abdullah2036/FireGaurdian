@@ -69,12 +69,12 @@ export function CalendarHeatmap({ data, mode, from, to, scale, showAnomalies, se
   })()
 
   return (
-    <div className="relative" ref={wrap}>
+    <div className="relative overflow-x-auto" ref={wrap}>
       <div
         role="grid"
         aria-label={`Monthly hotspot activity, ${mode} series, ${data.name}`}
         onKeyDown={onKey}
-        className="grid gap-[3px] select-none"
+        className="grid min-w-[520px] gap-[3px] select-none"
         style={{ gridTemplateColumns: `44px repeat(12, minmax(0, 1fr)) 88px` }}
       >
         <div />
