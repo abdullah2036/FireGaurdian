@@ -47,6 +47,7 @@ pipeline/            Python offline processing  →  web/public/data/*.json, web
   data/raw/          FIRMS downloads (MODIS_DATA.zip, VIIRS_DATA.zip: archive + NRT CSVs, KSA window)
   data/boundaries/   regions.geojson (Natural Earth, KSA + provinces + SW KSA), committed
   data/gihs/         GIHS polygons clipped to the KSA window, committed
+vercel.json          Vercel Services config (one public service: web)
 web/                 Vite + React + TypeScript + Tailwind, Radix/shadcn-style UI, ECharts
   api/               Vercel serverless functions (FIRMS proxy, health); keys stay server-side
   public/data/       precomputed calendar JSON per region, grid, boundaries
@@ -70,7 +71,7 @@ npm run dev                    # http://localhost:5173 (also serves /api/* local
 
 ## Deploy (Vercel)
 
-1. Import the GitHub repo in Vercel and set **Root Directory = `web`**. The framework (Vite) is read from `web/vercel.json`.
+1. Import the GitHub repo in Vercel and leave **Root Directory** at the repo root. The root `vercel.json` defines a single public **`web`** service (`web/`: Vite static site + `web/api/*` serverless functions). The Python `pipeline/` is offline tooling: it is not deployed (see `.vercelignore`) and its outputs are committed under `web/`.
 2. In **Settings → Environment Variables**, add `FIRMS_MAP_KEY`, `METEOMATICS_USER` and `METEOMATICS_PASS`, then redeploy.
 3. Every push to `main` deploys automatically. Check `/api/health` to see which keys are configured (it reports true or false, never the values).
 

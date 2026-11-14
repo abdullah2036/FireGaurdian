@@ -1,10 +1,23 @@
 // Point-in-polygon + static-source masking for live FIRMS detections.
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 // Data files are written by the Python pipeline and shipped via vercel.json `includeFiles`.
-const load = (f: string) => JSON.parse(readFileSync(join(process.cwd(), 'api', '_data', f), 'utf-8'))
+// The function's working directory differs between `vite dev`, a plain Vercel project and a
+// Vercel Services deployment, so try each plausible location.
+const here = dirname(fileURLToPath(import.meta.url))
+const DATA_DIRS = [
+  join(here, '..', '_data'),
+  join(process.cwd(), 'api', '_data'),
+  join(process.cwd(), 'web', 'api', '_data'),
+]
+const load = (f: string) => {
+  const dir = DATA_DIRS.find((d) => existsSync(join(d, f)))
+  if (!dir) throw new Error(`data file ${f} not found in ${DATA_DIRS.join(', ')}`)
+  return JSON.parse(readFileSync(join(dir, f), 'utf-8'))
+}
 const staticCells = load('static_cells.json')
 const ksa = load('ksa.json')
 const gihs = load('gihs.json')

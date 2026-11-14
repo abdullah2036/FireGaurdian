@@ -1,0 +1,5 @@
+# Offline Python pipeline and reference material are not deployed (outputs are committed under web/).
+pipeline/
+reference/
+.venv/
+api_keys.txt
