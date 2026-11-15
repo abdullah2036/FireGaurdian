@@ -137,6 +137,25 @@ def main():
         "cells": risk_cells})
     print(f"  risk: {len(risk_cells):,} cells over {len(yrs)} years ({size/1024:.0f} KB)")
 
+    # Monthly outlook per province: in how many of the complete dual-sensor years (same years as the
+    # risk layer) did the province have at least one flare-masked hotspot in each calendar month, and the
+    # median monthly count. This is a pattern from past records, not a forecast of a specific day.
+    outlook = []
+    for props, geom in regions:
+        if props["kind"] != "province":
+            continue
+        inside = shapely.contains_xy(geom, rm["longitude"].values, rm["latitude"].values)
+        pr = rm[inside]
+        cnt = pr.groupby(["year", "month"]).size()
+        months = []
+        for mth in range(1, 13):
+            vals = [int(cnt.get((y, mth), 0)) for y in yrs]
+            months.append({"years": int(sum(v > 0 for v in vals)), "median": float(np.median(vals))})
+        outlook.append({"id": props["id"], "name": props.get("short", props["name"]), "months": months})
+    size = _write(OUT_DIR / "outlook.json", {"years": [int(yrs[0]), int(yrs[-1])], "nYears": len(yrs), "provinces": outlook,
+                                             "method": "years with >=1 flare-masked hotspot in that calendar month; median monthly hotspot count"})
+    print(f"  outlook: {len(outlook)} provinces ({size/1024:.0f} KB)")
+
     # Static-source cells for masking live detections in /api/firms
     _write_module(API_DATA_DIR / "static_cells.js", {
         "keyBase": 100000,

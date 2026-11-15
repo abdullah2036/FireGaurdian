@@ -41,6 +41,15 @@ const fine = new Set(sc.fine)
 const coarse = new Set(sc.coarse)
 const key = (lat: number, lon: number, deg: number) => Math.floor(lat / deg) * sc.keyBase + Math.floor(lon / deg)
 
+/** Independent map clues, not confirmation that the point is a factory or is safe. */
+export function heatMapEvidence(lat: number, lon: number) {
+  return {
+    industrialMap: inGIHS(lon, lat),
+    persistentFine: fine.has(key(lat, lon, sc.fineDeg)),
+    persistentCoarse: coarse.has(key(lat, lon, sc.coarseDeg)),
+  }
+}
+
 /** Returns the reason a detection is treated as a static (non-vegetation) heat source, or null. */
 export function staticReason(lat: number, lon: number, type?: number | null): string | null {
   if (type === 2 || type === 3) return 'type'

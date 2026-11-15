@@ -13,12 +13,15 @@ function AboutAr() {
           <p className="rounded-lg border border-ember/30 bg-ember-soft p-3 text-ink/90">حارس الحرائق أداة بحثية وتوضيحية، وليس نظام إنذار رسمياً ولا يحل محل الدفاع المدني. أسطول المسيّرات محاكاة فقط ولم يُختبر على عتاد حقيقي.</p>
         </div>
       </Panel>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <Panel title="الحرائق الآن">
           <p className="text-[13.5px] leading-relaxed text-muted">حرائق رصدتها أقمار ناسا (NOAA-20 وNOAA-21) خلال الأيام الأخيرة، بعد استبعاد شعلات الغاز والحرارة الصناعية. تتحدث تلقائياً كل 10 دقائق.</p>
         </Panel>
+        <Panel title="مصادر الحرارة">
+          <p className="text-[13.5px] leading-relaxed text-muted">معظم النقاط الحرارية في المملكة ليست حرائق بل مصانع ومحطات كهرباء وشعلات غاز. يصنّف الموقع كل نقطة اعتماداً على تصنيفات ناسا لنفس الموقع، وقاعدة GIHS، واستمرار الحرارة لأشهر، ونموذج البصمة الحرارية. اختُبر على أشهر لم يرها: 99.96% من النقاط الصناعية و72% من الحرائق صُنّفت بشكل صحيح.</p>
+        </Panel>
         <Panel title="التوقعات">
-          <p className="text-[13.5px] leading-relaxed text-muted">الأماكن التي تكثر فيها الحرائق في هذا الشهر بحسب سجل 14 عاماً، مع توقع للغد من نموذج ذكاء اصطناعي بحثي يعتمد على طقس ناسا (POWER) ويغطي جازان وعسير والباحة.</p>
+          <p className="text-[13.5px] leading-relaxed text-muted">النمط الشهري لكل منطقة بحسب سجل 14 عاماً (هذا الشهر والشهر القادم). نموذج الغد التجريبي مخفي افتراضياً لأنه لم يكن أفضل من النمط الشهري في الاختبارات.</p>
         </Panel>
         <Panel title="مناطق الخطر">
           <p className="text-[13.5px] leading-relaxed text-muted">المناطق الأشد خطراً فقط: الحرائق المشتعلة الآن، والأماكن التي تحترق في معظم السنوات في هذا الشهر، والمناطق التي يصنفها النموذج عالية الخطورة غداً.</p>
@@ -51,6 +54,9 @@ export function AboutView() {
         </div>
       </Panel>
       <div className="grid gap-4 md:grid-cols-3">
+        <Panel title="Fire or factory?">
+          <p className="text-[13px] text-muted">Most satellite hotspots in Saudi Arabia are factories, power plants and gas flares, not fires. Each live hotspot is classified from NASA’s own labels for that spot (NOAA-20/21), GIHS industrial areas, months-long persistence and a thermal-signature model, and the evidence is shown. Tested on months it never saw: 99.96% of industrial points and 72% of fires classified correctly. See Analytics → AI models.</p>
+        </Panel>
         <Panel title="1 · Thermal space map">
           <ul className="grid gap-2 text-[13px] text-muted">
             <li><b className="text-red-400">Red</b>: active fires from NOAA-20/21 VIIRS (and optionally MODIS) via NASA FIRMS, with gas flares and industrial heat masked.</li>

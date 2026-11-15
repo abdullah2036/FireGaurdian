@@ -12,8 +12,8 @@ export interface AppState {
   /** Which map view the user picked: live fires, forecast or danger zones. */
   layer: MapLayer
 }
-export type MapLayer = 'live' | 'forecast' | 'danger'
-const LAYERS: MapLayer[] = ['live', 'forecast', 'danger']
+export type MapLayer = 'live' | 'sources' | 'forecast' | 'danger'
+const LAYERS: MapLayer[] = ['live', 'sources', 'forecast', 'danger']
 
 const VIEWS: ViewId[] = ['overview', 'calendar', 'method', 'aimodel', 'operations', 'about']
 export const DEFAULT_FROM = '2001-01'

@@ -22,6 +22,49 @@ const ROWS: { key: string; label: string; better: 'high' | 'low'; fmt: (v: numbe
   { key: 'log_loss', label: 'Log loss', better: 'low', fmt: (v) => v.toFixed(4) },
 ]
 
+interface HeatEval {
+  test_period: string; label_cells_from: string; test_detections: number
+  overall: { fire: Record<string, number>; industrial: Record<string, number>; accuracy_decided: number; uncertain_share: number }
+  new_locations: { n: number; fire: Record<string, number> }
+  thermal_model_on_noaa: { n: number; auc: number; accuracy_at_half: number }
+  night_share: { nasa_fire_labels: number; nasa_industrial_labels: number; nasa_fire_labels_inside_gihs: number | null }
+}
+
+/** Fire vs industrial heat: how the live classifier did on months it never saw. */
+function HeatClassifierPanel() {
+  const { data } = useJSON<HeatEval>('/data/heat-eval.json')
+  if (!data) return null
+  const o = data.overall, pct = (a: number, b: number) => `${((a / b) * 100).toFixed(1)}%`
+  const row = (label: string, r: Record<string, number>) => (
+    <tr className="border-b border-line/60">
+      <td className="py-1.5">{label} <span className="text-faint num">({r.n.toLocaleString()})</span></td>
+      <td className="num">{pct(r.fire, r.n)}</td><td className="num">{pct(r.industrial, r.n)}</td><td className="num">{pct(r.uncertain, r.n)}</td>
+    </tr>
+  )
+  return (
+    <Panel title="Heat-source classifier: fire or industrial?" subtitle={`Every live hotspot is classified. Tested on ${data.test_detections.toLocaleString()} NOAA-20/21 detections in Saudi Arabia from ${data.test_period}, months the classifier never saw (location labels built from ${data.label_cells_from}).`}>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[420px] text-start text-[13px]">
+            <thead className="label"><tr className="border-b border-line">
+              <th className="py-2 text-start font-normal">NASA label</th><th className="text-start font-normal">→ fire</th><th className="text-start font-normal">→ industrial</th><th className="text-start font-normal">→ uncertain</th>
+            </tr></thead>
+            <tbody>{row('Vegetation fire (type 0)', o.fire)}{row('Industrial / offshore (type 2/3)', o.industrial)}</tbody>
+          </table>
+          <p className="mt-2 text-[12.5px]">Accuracy on decided points: <b className="num text-cyan">{(o.accuracy_decided * 100).toFixed(1)}%</b> · uncertain: <span className="num">{(o.uncertain_share * 100).toFixed(1)}%</span></p>
+        </div>
+        <ul className="grid gap-1.5 text-[13px] text-muted">
+          <li>• <b className="text-ink">Evidence, strongest first:</b> NASA’s own fire/industrial labels for that spot (NOAA-20/21 archive), GIHS industrial heat areas, NASA fire history, then the teammate’s thermal-signature model (I4/I5 brightness, FRP, pixel size, day/night, distance to the nearest plant).</li>
+          <li>• <b className="text-ink">The thermal model transfers to NOAA-20/21:</b> AUC <span className="num">{data.thermal_model_on_noaa.auc}</span>, accuracy <span className="num">{(data.thermal_model_on_noaa.accuracy_at_half * 100).toFixed(1)}%</span> (it was trained on Suomi NPP).</li>
+          <li>• <b className="text-ink">Carbon monoxide</b> (CAMS model) was tested by the teammate and did not improve the model (80.3% vs 80.9%), so the live site does not use it.</li>
+          <li>• <b className="text-ink">NASA’s labels miss some flares:</b> fires labelled by NASA inside GIHS industrial areas were detected at night <span className="num">{Math.round((data.night_share.nasa_fire_labels_inside_gihs ?? 0) * 100)}%</span> of the time, versus <span className="num">{Math.round(data.night_share.nasa_fire_labels * 100)}%</span> for all NASA fires and <span className="num">{Math.round(data.night_share.nasa_industrial_labels * 100)}%</span> for industrial heat. So part of the “fire → industrial” share is likely correct.</li>
+          <li>• Facility names (Climate TRACE, OpenStreetMap) only describe a source; they never decide the class.</li>
+        </ul>
+      </div>
+    </Panel>
+  )
+}
+
 export function AIModelView() {
   const { data, error, loading } = useJSON<Metrics>('/data/ai-metrics.json')
   const { ai } = useLive()
@@ -45,6 +88,8 @@ export function AIModelView() {
 
   return (
     <div className="grid gap-4">
+      <HeatClassifierPanel />
+      <h2 className="mt-2 font-display text-[18px]">Experimental day-ahead model <span className="text-[13px] font-normal text-muted">· off the map by default: it is no better than the monthly pattern</span></h2>
       <div className="grid gap-4 lg:grid-cols-3">
         <Panel title="What the model is" className="lg:col-span-2">
           <ul className="grid gap-1.5 text-[13px] text-muted">

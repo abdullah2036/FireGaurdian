@@ -1,0 +1,218 @@
+[
+  {
+    "features": {
+      "brightness": 345.18,
+      "bright_t31": 299.88,
+      "channelDelta": 45.30000000000001,
+      "logFrp": 2.8678989020441064,
+      "scan": 0.58,
+      "track": 0.52,
+      "night": 0.0,
+      "confLow": 0.0,
+      "confHigh": 0.0,
+      "logDistance": 4.012388963559589,
+      "co": 157.0,
+      "coDelta": -20.958333333333343
+    },
+    "expectedStaticProbability": 0.1903373781947392,
+    "expectedStaticProbabilityNoCO": 0.19269211787777943
+  },
+  {
+    "features": {
+      "brightness": 296.16,
+      "bright_t31": 284.69,
+      "channelDelta": 11.470000000000027,
+      "logFrp": 0.5933268452777344,
+      "scan": 0.56,
+      "track": 0.43,
+      "night": 1.0,
+      "confLow": 0.0,
+      "confHigh": 0.0,
+      "logDistance": 0.9179208367472778,
+      "co": 173.0,
+      "coDelta": -4.208333333333343
+    },
+    "expectedStaticProbability": 0.8912822903863488,
+    "expectedStaticProbabilityNoCO": 0.8989353241121502
+  },
+  {
+    "features": {
+      "brightness": 295.3,
+      "bright_t31": 284.44,
+      "channelDelta": 10.860000000000014,
+      "logFrp": 0.6830968447064438,
+      "scan": 0.55,
+      "track": 0.43,
+      "night": 1.0,
+      "confLow": 0.0,
+      "confHigh": 0.0,
+      "logDistance": 0.37515255279195586,
+      "co": 173.0,
+      "coDelta": -4.208333333333343
+    },
+    "expectedStaticProbability": 0.8739125130161085,
+    "expectedStaticProbabilityNoCO": 0.8813395386564341
+  },
+  {
+    "features": {
+      "brightness": 298.11,
+      "bright_t31": 285.57,
+      "channelDelta": 12.54000000000002,
+      "logFrp": 0.6830968447064438,
+      "scan": 0.55,
+      "track": 0.43,
+      "night": 1.0,
+      "confLow": 0.0,
+      "confHigh": 0.0,
+      "logDistance": 0.0758237774928167,
+      "co": 173.0,
+      "coDelta": -4.208333333333343
+    },
+    "expectedStaticProbability": 0.8858148136544157,
+    "expectedStaticProbabilityNoCO": 0.8993720930856782
+  },
+  {
+    "features": {
+      "brightness": 302.83,
+      "bright_t31": 281.29,
+      "channelDelta": 21.539999999999964,
+      "logFrp": 0.7275486072772778,
+      "scan": 0.51,
+      "track": 0.41,
+      "night": 1.0,
+      "confLow": 0.0,
+      "confHigh": 0.0,
+      "logDistance": 1.0488699985578078,
+      "co": 323.0,
+      "coDelta": 71.36111111111111
+    },
+    "expectedStaticProbability": 0.9228075146760419,
+    "expectedStaticProbabilityNoCO": 0.9200529714243871
+  },
+  {
+    "features": {
+      "brightness": 295.66,
+      "bright_t31": 282.08,
+      "channelDelta": 13.580000000000041,
+      "logFrp": 0.4382549309311553,
+      "scan": 0.55,
+      "track": 0.43,
+      "night": 1.0,
+      "confLow": 0.0,
+      "confHigh": 0.0,
+      "logDistance": 1.412669261752265,
+      "co": 173.0,
+      "coDelta": -4.208333333333343
+    },
+    "expectedStaticProbability": 0.571072585412964,
+    "expectedStaticProbabilityNoCO": 0.5661113357188178
+  },
+  {
+    "features": {
+      "brightness": 308.65,
+      "bright_t31": 283.59,
+      "channelDelta": 25.060000000000002,
+      "logFrp": 2.82018770103906,
+      "scan": 0.45,
+      "track": 0.47,
+      "night": 1.0,
+      "confLow": 0.0,
+      "confHigh": 0.0,
+      "logDistance": 3.9953751364372834,
+      "co": 164.0,
+      "coDelta": -14.763888888888886
+    },
+    "expectedStaticProbability": 0.20637792790744933,
+    "expectedStaticProbabilityNoCO": 0.2117069722468279
+  },
+  {
+    "features": {
+      "brightness": 309.17,
+      "bright_t31": 283.12,
+      "channelDelta": 26.05000000000001,
+      "logFrp": 2.9657883971809187,
+      "scan": 0.46,
+      "track": 0.47,
+      "night": 1.0,
+      "confLow": 0.0,
+      "confHigh": 0.0,
+      "logDistance": 3.998303189438334,
+      "co": 164.0,
+      "coDelta": -14.763888888888886
+    },
+    "expectedStaticProbability": 0.20569470002082876,
+    "expectedStaticProbabilityNoCO": 0.21121600301021187
+  },
+  {
+    "features": {
+      "brightness": 346.13,
+      "bright_t31": 293.34,
+      "channelDelta": 52.79000000000002,
+      "logFrp": 2.82018770103906,
+      "scan": 0.45,
+      "track": 0.47,
+      "night": 1.0,
+      "confLow": 0.0,
+      "confHigh": 0.0,
+      "logDistance": 4.003767747609827,
+      "co": 164.0,
+      "coDelta": -14.763888888888886
+    },
+    "expectedStaticProbability": 0.20042589630779908,
+    "expectedStaticProbabilityNoCO": 0.215989153638991
+  },
+  {
+    "features": {
+      "brightness": 344.04,
+      "bright_t31": 286.67,
+      "channelDelta": 57.370000000000005,
+      "logFrp": 2.9657883971809187,
+      "scan": 0.46,
+      "track": 0.47,
+      "night": 1.0,
+      "confLow": 0.0,
+      "confHigh": 0.0,
+      "logDistance": 4.009578190846327,
+      "co": 164.0,
+      "coDelta": -14.763888888888886
+    },
+    "expectedStaticProbability": 0.19632346516852214,
+    "expectedStaticProbabilityNoCO": 0.20368505277212712
+  },
+  {
+    "features": {
+      "brightness": 314.92,
+      "bright_t31": 300.56,
+      "channelDelta": 14.360000000000014,
+      "logFrp": 2.9657883971809187,
+      "scan": 0.46,
+      "track": 0.47,
+      "night": 1.0,
+      "confLow": 0.0,
+      "confHigh": 0.0,
+      "logDistance": 4.0066447246698615,
+      "co": 164.0,
+      "coDelta": -14.763888888888886
+    },
+    "expectedStaticProbability": 0.2241695803125187,
+    "expectedStaticProbabilityNoCO": 0.2558077260352553
+  },
+  {
+    "features": {
+      "brightness": 329.65,
+      "bright_t31": 282.65,
+      "channelDelta": 47.0,
+      "logFrp": 1.3270750014599193,
+      "scan": 0.46,
+      "track": 0.47,
+      "night": 1.0,
+      "confLow": 0.0,
+      "confHigh": 0.0,
+      "logDistance": 4.0178118538304455,
+      "co": 164.0,
+      "coDelta": -14.763888888888886
+    },
+    "expectedStaticProbability": 0.19818027716567194,
+    "expectedStaticProbabilityNoCO": 0.2098751321853654
+  }
+]

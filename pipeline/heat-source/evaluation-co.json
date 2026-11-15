@@ -1,0 +1,408 @@
+{
+  "description": {
+    "training_rows": 30062,
+    "calibration_rows": 6732,
+    "matched_rows_all": 83042,
+    "co_cells": 80,
+    "facilities": 157,
+    "training": "2024 non-held-out spatial blocks",
+    "calibration": "2025 held-out spatial blocks",
+    "test": "2026 Jan-Feb in held-out blocks; these blocks were seen in calibration",
+    "target": "NASA FIRMS inferred type 0 vs type 2, not verified ground truth",
+    "notes": [
+      "2025 facility inventory used retrospectively during 2024 training: potential look-ahead",
+      "CAMS CO ~0.4 degree model not local measured gas and can include satellite fire-emission inputs",
+      "S-NPP calibration only; NOAA-20/21 deployment unvalidated",
+      "Top 80 grid cells selected from 2024 hotspot density; coverage not all Saudi Arabia",
+      "A nearest named facility is not necessarily the source of a hotspot"
+    ]
+  },
+  "with_co": {
+    "2025_training_regions": {
+      "n": 32109,
+      "firms_type0": 9238,
+      "firms_type2": 22871,
+      "auc": 0.9229,
+      "brier": 0.0865,
+      "log_loss": 0.31,
+      "correct_at_half": 0.8999,
+      "type0_pred_type0": 6621,
+      "type0_pred_type2": 2617,
+      "type2_pred_type0": 597,
+      "type2_pred_type2": 22274,
+      "calibration_bins": [
+        {
+          "range": [
+            0.1,
+            0.2
+          ],
+          "n": 1764,
+          "mean_model_index": 0.167,
+          "firms_type2_fraction": 0.007
+        },
+        {
+          "range": [
+            0.2,
+            0.3
+          ],
+          "n": 3238,
+          "mean_model_index": 0.249,
+          "firms_type2_fraction": 0.065
+        },
+        {
+          "range": [
+            0.3,
+            0.4
+          ],
+          "n": 1306,
+          "mean_model_index": 0.341,
+          "firms_type2_fraction": 0.106
+        },
+        {
+          "range": [
+            0.4,
+            0.5
+          ],
+          "n": 910,
+          "mean_model_index": 0.453,
+          "firms_type2_fraction": 0.259
+        },
+        {
+          "range": [
+            0.5,
+            0.6
+          ],
+          "n": 737,
+          "mean_model_index": 0.542,
+          "firms_type2_fraction": 0.318
+        },
+        {
+          "range": [
+            0.6,
+            0.7
+          ],
+          "n": 585,
+          "mean_model_index": 0.647,
+          "firms_type2_fraction": 0.513
+        },
+        {
+          "range": [
+            0.7,
+            0.8
+          ],
+          "n": 912,
+          "mean_model_index": 0.763,
+          "firms_type2_fraction": 0.793
+        },
+        {
+          "range": [
+            0.8,
+            0.9
+          ],
+          "n": 9388,
+          "mean_model_index": 0.868,
+          "firms_type2_fraction": 0.886
+        },
+        {
+          "range": [
+            0.9,
+            1.0
+          ],
+          "n": 13269,
+          "mean_model_index": 0.918,
+          "firms_type2_fraction": 0.957
+        }
+      ]
+    },
+    "2026_jan_feb_geographic_holdout": {
+      "n": 1553,
+      "firms_type0": 732,
+      "firms_type2": 821,
+      "auc": 0.8674,
+      "brier": 0.1432,
+      "log_loss": 0.452,
+      "correct_at_half": 0.803,
+      "type0_pred_type0": 648,
+      "type0_pred_type2": 84,
+      "type2_pred_type0": 222,
+      "type2_pred_type2": 599,
+      "calibration_bins": [
+        {
+          "range": [
+            0.1,
+            0.2
+          ],
+          "n": 237,
+          "mean_model_index": 0.184,
+          "firms_type2_fraction": 0.139
+        },
+        {
+          "range": [
+            0.2,
+            0.3
+          ],
+          "n": 446,
+          "mean_model_index": 0.244,
+          "firms_type2_fraction": 0.238
+        },
+        {
+          "range": [
+            0.3,
+            0.4
+          ],
+          "n": 129,
+          "mean_model_index": 0.33,
+          "firms_type2_fraction": 0.442
+        },
+        {
+          "range": [
+            0.4,
+            0.5
+          ],
+          "n": 58,
+          "mean_model_index": 0.447,
+          "firms_type2_fraction": 0.448
+        },
+        {
+          "range": [
+            0.5,
+            0.6
+          ],
+          "n": 27,
+          "mean_model_index": 0.525,
+          "firms_type2_fraction": 0.556
+        },
+        {
+          "range": [
+            0.6,
+            0.7
+          ],
+          "n": 5,
+          "mean_model_index": 0.645,
+          "firms_type2_fraction": 0.0
+        },
+        {
+          "range": [
+            0.7,
+            0.8
+          ],
+          "n": 22,
+          "mean_model_index": 0.78,
+          "firms_type2_fraction": 0.636
+        },
+        {
+          "range": [
+            0.8,
+            0.9
+          ],
+          "n": 412,
+          "mean_model_index": 0.868,
+          "firms_type2_fraction": 0.908
+        },
+        {
+          "range": [
+            0.9,
+            1.0
+          ],
+          "n": 217,
+          "mean_model_index": 0.914,
+          "firms_type2_fraction": 0.903
+        }
+      ]
+    }
+  },
+  "without_co": {
+    "2025_training_regions": {
+      "n": 32109,
+      "firms_type0": 9238,
+      "firms_type2": 22871,
+      "auc": 0.9232,
+      "brier": 0.0862,
+      "log_loss": 0.3095,
+      "correct_at_half": 0.9017,
+      "type0_pred_type0": 6701,
+      "type0_pred_type2": 2537,
+      "type2_pred_type0": 618,
+      "type2_pred_type2": 22253,
+      "calibration_bins": [
+        {
+          "range": [
+            0.1,
+            0.2
+          ],
+          "n": 1946,
+          "mean_model_index": 0.168,
+          "firms_type2_fraction": 0.006
+        },
+        {
+          "range": [
+            0.2,
+            0.3
+          ],
+          "n": 3164,
+          "mean_model_index": 0.25,
+          "firms_type2_fraction": 0.068
+        },
+        {
+          "range": [
+            0.3,
+            0.4
+          ],
+          "n": 1184,
+          "mean_model_index": 0.342,
+          "firms_type2_fraction": 0.119
+        },
+        {
+          "range": [
+            0.4,
+            0.5
+          ],
+          "n": 1025,
+          "mean_model_index": 0.455,
+          "firms_type2_fraction": 0.244
+        },
+        {
+          "range": [
+            0.5,
+            0.6
+          ],
+          "n": 648,
+          "mean_model_index": 0.541,
+          "firms_type2_fraction": 0.335
+        },
+        {
+          "range": [
+            0.6,
+            0.7
+          ],
+          "n": 559,
+          "mean_model_index": 0.648,
+          "firms_type2_fraction": 0.528
+        },
+        {
+          "range": [
+            0.7,
+            0.8
+          ],
+          "n": 972,
+          "mean_model_index": 0.762,
+          "firms_type2_fraction": 0.78
+        },
+        {
+          "range": [
+            0.8,
+            0.9
+          ],
+          "n": 9618,
+          "mean_model_index": 0.868,
+          "firms_type2_fraction": 0.889
+        },
+        {
+          "range": [
+            0.9,
+            1.0
+          ],
+          "n": 12993,
+          "mean_model_index": 0.918,
+          "firms_type2_fraction": 0.957
+        }
+      ]
+    },
+    "2026_jan_feb_geographic_holdout": {
+      "n": 1553,
+      "firms_type0": 732,
+      "firms_type2": 821,
+      "auc": 0.8672,
+      "brier": 0.1433,
+      "log_loss": 0.452,
+      "correct_at_half": 0.8088,
+      "type0_pred_type0": 651,
+      "type0_pred_type2": 81,
+      "type2_pred_type0": 216,
+      "type2_pred_type2": 605,
+      "calibration_bins": [
+        {
+          "range": [
+            0.1,
+            0.2
+          ],
+          "n": 240,
+          "mean_model_index": 0.186,
+          "firms_type2_fraction": 0.133
+        },
+        {
+          "range": [
+            0.2,
+            0.3
+          ],
+          "n": 473,
+          "mean_model_index": 0.244,
+          "firms_type2_fraction": 0.281
+        },
+        {
+          "range": [
+            0.3,
+            0.4
+          ],
+          "n": 94,
+          "mean_model_index": 0.33,
+          "firms_type2_fraction": 0.287
+        },
+        {
+          "range": [
+            0.4,
+            0.5
+          ],
+          "n": 60,
+          "mean_model_index": 0.45,
+          "firms_type2_fraction": 0.4
+        },
+        {
+          "range": [
+            0.5,
+            0.6
+          ],
+          "n": 30,
+          "mean_model_index": 0.526,
+          "firms_type2_fraction": 0.7
+        },
+        {
+          "range": [
+            0.6,
+            0.7
+          ],
+          "n": 7,
+          "mean_model_index": 0.654,
+          "firms_type2_fraction": 0.0
+        },
+        {
+          "range": [
+            0.7,
+            0.8
+          ],
+          "n": 20,
+          "mean_model_index": 0.78,
+          "firms_type2_fraction": 0.75
+        },
+        {
+          "range": [
+            0.8,
+            0.9
+          ],
+          "n": 415,
+          "mean_model_index": 0.868,
+          "firms_type2_fraction": 0.904
+        },
+        {
+          "range": [
+            0.9,
+            1.0
+          ],
+          "n": 214,
+          "mean_model_index": 0.916,
+          "firms_type2_fraction": 0.907
+        }
+      ]
+    }
+  }
+}

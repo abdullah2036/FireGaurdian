@@ -1,7 +1,8 @@
 // The map. One view at a time, chosen by the user:
-//   live     — fires seen by NASA satellites (pulsing flame icons); optional filtered industrial heat
-//   forecast — where fires are common this month (glow) + tomorrow's AI index cells (southwest pilot)
-//   danger   — only high-danger areas: fires now, places that burn most years this month, AI "high" cells
+//   live     — hotspots classified as vegetation fires (pulsing flames) + uncertain ones (amber "?")
+//   sources  — hotspots classified as industrial / offshore heat (factory, power, flare icons) + known sites
+//   forecast — where fires are common in the chosen month (glow); experimental day-ahead AI cells on request
+//   danger   — only high-danger areas: fires now and places that burn most years this month
 //   drones   — live fires + the simulated drone fleet (Drones page only)
 // Tapping a fire, an area or empty ground selects it (weather and details follow the selection).
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
@@ -25,9 +26,26 @@ const square = (lat: number, lon: number, hy: number, hx = hy): Polygon => ({
   type: 'Polygon', coordinates: [[[lon - hx, lat - hy], [lon + hx, lat - hy], [lon + hx, lat + hy], [lon - hx, lat + hy], [lon - hx, lat - hy]]],
 })
 const fireSize = (c: Cluster) => (c.frpSum >= 15 ? 34 : c.frpSum >= 3 ? 27 : 21)
+const markerOn = (cat: string | undefined, mode: MapMode) =>
+  cat === 'fire' ? mode === 'live' || mode === 'danger' || mode === 'drones' : cat === 'uncertain' ? mode === 'live' : mode === 'sources'
 
-export function FireMap({ mode, showFlares = false, phone = false, className, onSelect, padding }: {
-  mode: MapMode; showFlares?: boolean; phone?: boolean; className?: string
+/** 24x24 icon paths: flame (fire), factory, bolt (power plant), flare stack (oil & gas), platform (offshore). */
+export const ICON = {
+  flame: 'M12 2c1 3 4 5 4 9a4 4 0 0 1-8 0c0-1.5.5-2.5 1.5-3.5C9 9 9.5 10.5 10.5 11 10 7 12 4 12 2Zm0 20a7 7 0 0 1-7-7c0-2.4 1.1-4.2 2.4-5.6.3 1.6 1 2.7 2.1 3.4A6 6 0 0 0 12 22Z',
+  factory: 'M2 21V10l6 3.5V10l6 3.5V4h3l1 9.5V21H2Zm4-3h2v-2H6v2Zm5 0h2v-2h-2v2Zm5 0h2v-2h-2v2Z',
+  power: 'M13 2 4 14h6l-1 8 9-12h-6l1-8Z',
+  flare: 'M11 22V10h2v12h-2Zm-3 0 2-8h4l2 8H8ZM12 1c.7 2 2.5 3.2 2.5 5.5a2.5 2.5 0 0 1-5 0c0-1 .3-1.6.9-2.2-.1 1 .3 1.7.9 2 0-2.3.4-3.6.7-5.3Z',
+  offshore: 'M4 20c1.5 0 1.5-1 3-1s1.5 1 3 1 1.5-1 3-1 1.5 1 3 1 1.5-1 3-1v2c-1.5 0-1.5 1-3 1s-1.5-1-3-1-1.5 1-3 1-1.5-1-3-1-1.5 1-3 1v-2ZM6 17V9h12v8h-2v-3H8v3H6Zm4-10V3h4v4h-4Z',
+} as const
+export function iconFor(subtype: string | null | undefined): keyof typeof ICON {
+  if (subtype === 'power') return 'power'
+  if (subtype === 'flare' || subtype === 'oil_gas') return 'flare'
+  if (subtype === 'offshore') return 'offshore'
+  return 'factory'
+}
+
+export function FireMap({ mode, phone = false, className, onSelect, padding }: {
+  mode: MapMode; phone?: boolean; className?: string
   onSelect?: () => void; padding?: { top: number; bottom: number; left: number; right: number }
 }) {
   const { region } = useApp()
@@ -70,7 +88,7 @@ export function FireMap({ mode, showFlares = false, phone = false, className, on
     m.touchZoomRotate.disableRotation()
     m.on('load', () => {
       const empty: FeatureCollection = { type: 'FeatureCollection', features: [] }
-      for (const id of ['regions', 'season', 'flares', 'missions', 'ai']) m.addSource(id, { type: 'geojson', data: empty })
+      for (const id of ['regions', 'season', 'sites', 'missions', 'ai']) m.addSource(id, { type: 'geojson', data: empty })
       m.addLayer({
         id: 'season-heat', type: 'heatmap', source: 'season',
         paint: {
@@ -104,7 +122,10 @@ export function FireMap({ mode, showFlares = false, phone = false, className, on
       m.addLayer({ id: 'provinces', type: 'line', source: 'regions', filter: ['==', ['get', 'kind'], 'province'], paint: { 'line-color': 'rgba(255,255,255,0.2)', 'line-width': 0.7 } })
       m.addLayer({ id: 'ksa-glow', type: 'line', source: 'regions', filter: ['==', ['get', 'id'], 'ksa'], paint: { 'line-color': 'rgba(255,255,255,0.22)', 'line-width': 5, 'line-blur': 4 } })
       m.addLayer({ id: 'ksa', type: 'line', source: 'regions', filter: ['==', ['get', 'id'], 'ksa'], paint: { 'line-color': 'rgba(255,255,255,0.75)', 'line-width': 1.2 } })
-      m.addLayer({ id: 'flares', type: 'circle', source: 'flares', paint: { 'circle-radius': 3, 'circle-color': '#94a3b8', 'circle-opacity': 0.85, 'circle-stroke-color': '#0f172a', 'circle-stroke-width': 1 } })
+      // known industrial heat sites (NASA type 2/3 detections, NOAA-20/21, clustered): context for the Heat sources view
+      m.addLayer({ id: 'sites', type: 'circle', source: 'sites', paint: {
+        'circle-radius': ['interpolate', ['linear'], ['get', 'n'], 10, 3.5, 300, 6, 3000, 9],
+        'circle-color': '#94a3b8', 'circle-opacity': 0.35, 'circle-stroke-color': '#cbd5e1', 'circle-stroke-width': 1, 'circle-stroke-opacity': 0.6 } })
       m.addLayer({ id: 'missions', type: 'line', source: 'missions', paint: { 'line-color': ['match', ['get', 'kind'], 'cool', '#22d3ee', '#fb923c'], 'line-width': 1.4, 'line-dasharray': [2, 2], 'line-opacity': 0.85 } })
       setReady(true)
     })
@@ -112,6 +133,15 @@ export function FireMap({ mode, showFlares = false, phone = false, className, on
     m.on('click', (e) => {
       if (performance.now() - markerClickAt.current < 400) return
       const L = liveRef.current
+      if (m.getLayer('sites') && m.getLayoutProperty('sites', 'visibility') !== 'none') {
+        const hit = m.queryRenderedFeatures([[e.point.x - 8, e.point.y - 8], [e.point.x + 8, e.point.y + 8]], { layers: ['sites'] })[0]
+        if (hit) {
+          const p = hit.properties as { lat: number; lon: number; idx: number }
+          L.setFocus({ lat: p.lat, lon: p.lon, label: `Industrial site ${p.idx}`, kind: 'site', id: String(p.idx) })
+          onSelectRef.current?.()
+          return
+        }
+      }
       const layers = ['ai-fill', 'season-high'].filter((id) => m.getLayer(id) && m.getLayoutProperty(id, 'visibility') !== 'none')
       const f = layers.length ? m.queryRenderedFeatures(e.point, { layers })[0] : undefined
       if (f?.layer.id === 'ai-fill') {
@@ -125,7 +155,7 @@ export function FireMap({ mode, showFlares = false, phone = false, className, on
       }
       onSelectRef.current?.()
     })
-    for (const id of ['ai-fill', 'season-high']) {
+    for (const id of ['ai-fill', 'season-high', 'sites']) {
       m.on('mouseenter', id, () => (m.getCanvas().style.cursor = 'pointer'))
       m.on('mouseleave', id, () => (m.getCanvas().style.cursor = ''))
     }
@@ -161,12 +191,11 @@ export function FireMap({ mode, showFlares = false, phone = false, className, on
 
   useEffect(() => {
     if (!ready) return
-    const flares = (live.firms?.detections ?? []).filter((d) => d.static)
-    ;(map.current!.getSource('flares') as GeoJSONSource).setData({
+    ;(map.current!.getSource('sites') as GeoJSONSource).setData({
       type: 'FeatureCollection',
-      features: flares.map((d) => ({ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [d.lon, d.lat] } })),
+      features: (live.heatSites ?? []).map((s, idx) => ({ type: 'Feature', properties: { lat: s.lat, lon: s.lon, n: s.n, idx }, geometry: { type: 'Point', coordinates: [s.lon, s.lat] } })),
     })
-  }, [ready, live.firms])
+  }, [ready, live.heatSites])
 
   // ---- which layers each view shows ----
   useEffect(() => {
@@ -177,39 +206,54 @@ export function FireMap({ mode, showFlares = false, phone = false, className, on
     vis('season-high', mode === 'danger')
     vis('season-high-heat', mode === 'danger')
     vis('season-high-line', mode === 'danger')
-    vis('ai-fill', mode === 'forecast' || mode === 'danger')
-    vis('ai-line', mode === 'forecast' || mode === 'danger')
-    m.setFilter('ai-fill', mode === 'danger' ? ['==', ['get', 'level'], 'high'] : null)
-    m.setFilter('ai-line', mode === 'danger' ? ['==', ['get', 'level'], 'high'] : null)
-    vis('flares', mode === 'live' && showFlares)
+    vis('ai-fill', mode === 'forecast' && live.aiOnMap)
+    vis('ai-line', mode === 'forecast' && live.aiOnMap)
+    vis('sites', mode === 'sources')
     vis('missions', mode === 'drones')
-    const firesOn = mode !== 'forecast'
-    fireMarkers.current.forEach((mk) => (mk.getElement().style.display = firesOn ? '' : 'none'))
-  }, [mode, showFlares, ready])
+    fireMarkers.current.forEach((mk) => { mk.getElement().style.display = markerOn(mk.getElement().dataset.cat, mode) ? '' : 'none' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, ready, live.aiOnMap])
 
-  // ---- fire markers (one per fire cluster) ----
+  // ---- markers: fires (red flame), uncertain (amber ?), industrial (slate icon by type) ----
   useEffect(() => {
     const m = map.current
     if (!m || !ready) return
     fireMarkers.current.forEach((mk) => mk.remove())
-    fireMarkers.current = live.clusters.slice(0, 40).map((c) => {
-      const size = fireSize(c)
+    const all: { c: Cluster; cat: 'fire' | 'uncertain' | 'source' }[] = [
+      ...live.clusters.slice(0, 60).map((c) => ({ c, cat: 'fire' as const })),
+      ...live.uncertainClusters.slice(0, 40).map((c) => ({ c, cat: 'uncertain' as const })),
+      ...live.staticClusters.slice(0, 120).map((c) => ({ c, cat: 'source' as const })),
+    ]
+    fireMarkers.current = all.map(({ c, cat }) => {
       const div = document.createElement('button')
-      div.className = 'fg-fire'
-      div.style.width = div.style.height = `${size}px`
-      div.setAttribute('aria-label', `Fire ${c.id}`)
-      div.innerHTML = `<span class="fg-fire-ring"></span><svg viewBox="0 0 24 24" width="${Math.round(size * 0.55)}" height="${Math.round(size * 0.55)}" fill="currentColor" aria-hidden="true"><path d="M12 2c1 3 4 5 4 9a4 4 0 0 1-8 0c0-1.5.5-2.5 1.5-3.5C9 9 9.5 10.5 10.5 11 10 7 12 4 12 2Zm0 20a7 7 0 0 1-7-7c0-2.4 1.1-4.2 2.4-5.6.3 1.6 1 2.7 2.1 3.4A6 6 0 0 0 12 22Z"/></svg>`
-      div.style.display = mode === 'forecast' ? 'none' : ''
+      div.dataset.cat = cat
+      if (cat === 'fire') {
+        const size = fireSize(c)
+        div.className = 'fg-fire'
+        div.style.width = div.style.height = `${size}px`
+        div.setAttribute('aria-label', `Fire ${c.id}`)
+        div.innerHTML = `<span class="fg-fire-ring"></span><svg viewBox="0 0 24 24" width="${Math.round(size * 0.55)}" height="${Math.round(size * 0.55)}" fill="currentColor" aria-hidden="true"><path d="${ICON.flame}"/></svg>`
+      } else if (cat === 'uncertain') {
+        div.className = 'fg-unc'
+        div.setAttribute('aria-label', `Unconfirmed hotspot ${c.id}`)
+        div.textContent = '?'
+      } else {
+        div.className = cn('fg-src', c.category === 'offshore' && 'fg-src-off')
+        div.setAttribute('aria-label', `Industrial heat ${c.id}`)
+        div.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="${ICON[iconFor(c.subtype)]}"/></svg>`
+      }
+      div.style.display = markerOn(cat, mode) ? '' : 'none'
       div.addEventListener('click', (ev) => {
         ev.stopPropagation()
         markerClickAt.current = performance.now()
-        liveRef.current.setFocus({ lat: c.lat, lon: c.lon, label: `Fire ${c.id}`, kind: 'fire', id: c.id })
+        const kind = cat === 'fire' ? 'fire' : cat === 'uncertain' ? 'uncertain' : 'static'
+        liveRef.current.setFocus({ lat: c.lat, lon: c.lon, label: `${kind} ${c.id}`, kind, id: c.id })
         onSelectRef.current?.()
       })
       return new maplibregl.Marker({ element: div }).setLngLat([c.lon, c.lat]).addTo(m)
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [live.clusters, ready])
+  }, [live.clusters, live.uncertainClusters, live.staticClusters, ready])
 
   // ---- selection ring ----
   useEffect(() => {

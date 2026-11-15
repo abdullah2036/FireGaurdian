@@ -125,16 +125,16 @@ function MobileMap() {
   const { layer } = useApp()
   const live = useLive()
   const { t } = useT()
-  const [showFlares, setShowFlares] = useState(false)
   const [snap, setSnap] = useState<Snap>('peek')
   const onSelect = useCallback(() => setSnap((s) => (s === 'peek' ? 'half' : s)), [])
   const summary = layer === 'live'
     ? `${t('live.count')}: ${live.firms ? live.clusters.length : '…'}`
+    : layer === 'sources' ? `${t('src.count')}: ${live.firms ? live.firms.detections.filter((d) => d.cls?.category === 'industrial' || d.cls?.category === 'offshore').length : '…'}`
     : layer === 'forecast' ? t('mode.forecast.hint') : t('mode.danger.hint')
   return (
     <>
       <div className="fixed inset-x-0 top-0 z-0" style={{ bottom: `calc(${TABBAR}px + env(safe-area-inset-bottom))` }}>
-        <FireMap mode={layer} showFlares={showFlares} phone onSelect={onSelect} className="h-full w-full"
+        <FireMap mode={layer} phone onSelect={onSelect} className="h-full w-full"
           padding={{ top: APPBAR + 64, bottom: 190, left: 16, right: 16 }} />
       </div>
       <AppBar overlay />
@@ -145,8 +145,8 @@ function MobileMap() {
           <span className="ms-auto text-[12px] text-faint">{t(snap === 'peek' ? 'common.details' : 'common.close')}</span>
         </div>
       }>
-        <Legend mode={layer} showFlares={showFlares} className="mb-3 !bg-white/[0.03]" />
-        <ModePanel showFlares={showFlares} setShowFlares={setShowFlares} />
+        <Legend mode={layer} className="mb-3 !bg-white/[0.03]" />
+        <ModePanel />
       </BottomSheet>
     </>
   )

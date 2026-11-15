@@ -1,0 +1,87 @@
+{
+ "what": "Heat-source classifier tested on NOAA-20/21 detections in Saudi Arabia, scored against NASA FIRMS labels (type 0 = vegetation fire; 2/3 = static/offshore source).",
+ "label_cells_from": "2024-08-01 to 2026-04-30",
+ "test_period": "2026-05-01 to 2026-07-31",
+ "test_detections": 27600,
+ "overall": {
+  "fire": {
+   "n": 11931,
+   "fire": 8560,
+   "industrial": 3281,
+   "uncertain": 90
+  },
+  "industrial": {
+   "n": 15669,
+   "fire": 7,
+   "industrial": 15662,
+   "uncertain": 0
+  },
+  "accuracy_decided": 0.8805,
+  "balanced_recall": 0.8585,
+  "uncertain_share": 0.0033
+ },
+ "new_locations": {
+  "n": 4060,
+  "fire": {
+   "n": 4053,
+   "fire": 3726,
+   "industrial": 251,
+   "uncertain": 76
+  },
+  "industrial": {
+   "n": 7,
+   "fire": 7,
+   "industrial": 0,
+   "uncertain": 0
+  },
+  "accuracy_decided": 0.9352,
+  "balanced_recall": 0.4597,
+  "uncertain_share": 0.0187
+ },
+ "thermal_model_on_noaa": {
+  "n": 27598,
+  "auc": 0.9223,
+  "accuracy_at_half": 0.8767,
+  "share_industrial_in_test": 0.5677
+ },
+ "by_reason": {
+  "": {
+   "fire": 90,
+   "industrial": 0
+  },
+  "gihs": {
+   "fire": 1413,
+   "industrial": 628
+  },
+  "long_running": {
+   "fire": 526,
+   "industrial": 89
+  },
+  "nasa_fire_history": {
+   "fire": 4280,
+   "industrial": 0
+  },
+  "nasa_static": {
+   "fire": 1087,
+   "industrial": 14944
+  },
+  "persistent": {
+   "fire": 123,
+   "industrial": 0
+  },
+  "thermal_model": {
+   "fire": 4412,
+   "industrial": 8
+  }
+ },
+ "night_share": {
+  "nasa_fire_labels": 0.446,
+  "nasa_industrial_labels": 0.901,
+  "nasa_fire_labels_inside_gihs": 0.754
+ },
+ "caveats": [
+  "NASA's type labels are themselves inferred from persistence, not field-verified.",
+  "Live repeat-night flags cannot be replayed on archive data and are not included in this test.",
+  "A nearby named facility is a candidate source, not proof."
+ ]
+}

@@ -4,7 +4,9 @@
 // Falls back to clearly-labelled mock data when FIRMS_MAP_KEY is missing or FIRMS fails.
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
 import { cached, parseCSV, sendJSON, type Req, type Res } from '../lib/http.js'
-import { inKSA, staticReason } from '../lib/geo.js'
+import { heatMapEvidence, inKSA, staticReason } from '../lib/geo.js'
+import { assessHeat, type HeatAssessment } from '../lib/heat.js'
+import { classifyHeat, nasaPeriod, type SourceClass } from '../lib/classify.js'
 
 const SOURCES = ['VIIRS_NOAA20_NRT', 'VIIRS_NOAA21_NRT', 'MODIS_NRT', 'VIIRS_SNPP_NRT'] as const
 const KSA_BBOX = '34.4,16.3,55.7,32.2' // query window; results are clipped to the border polygon
@@ -12,6 +14,15 @@ const KSA_BBOX = '34.4,16.3,55.7,32.2' // query window; results are clipped to t
 export interface Detection {
   lat: number; lon: number; date: string; time: string; satellite: string; source: string
   conf: 'l' | 'n' | 'h' | 'u'; frp: number | null; brightK: number | null; daynight: string; static: string | null
+  brightI5K: number | null; scan: number | null; track: number | null; reportedType: number | null; heat?: HeatAssessment
+  /** fire / industrial / offshore / uncertain, with the evidence used (api/lib/classify.ts) */
+  cls?: SourceClass
+}
+
+function numeric(s: string | undefined): number | null {
+  if (s == null || s.trim() === '') return null
+  const value = Number(s)
+  return Number.isFinite(value) && value !== -999 ? value : null
 }
 
 function normConf(c: string): Detection['conf'] {
@@ -35,8 +46,10 @@ async function fetchSource(key: string, source: string, days: number): Promise<D
       const lat = Number(row.latitude), lon = Number(row.longitude)
       return {
         lat, lon, date: row.acq_date, time: (row.acq_time ?? '').padStart(4, '0'), satellite: row.satellite, source,
-        conf: normConf(row.confidence), frp: row.frp ? Number(row.frp) : null,
-        brightK: Number(row.bright_ti4 ?? row.brightness) || null, daynight: row.daynight,
+        conf: normConf(row.confidence), frp: numeric(row.frp),
+        brightK: numeric(row.bright_ti4 ?? row.brightness), brightI5K: numeric(row.bright_ti5 ?? row.brightness_2 ?? row.bright_t31),
+        scan: numeric(row.scan), track: numeric(row.track), daynight: row.daynight,
+        reportedType: numeric(row.type),
         static: staticReason(lat, lon, row.type ? Number(row.type) : null),
       }
     }).filter((d) => Number.isFinite(d.lat) && inKSA(d.lon, d.lat))
@@ -58,6 +71,7 @@ function mock(source: string, days: number): Detection[] {
       lat, lon, date: today, time: String(Math.floor(rnd() * 2359)).padStart(4, '0'), satellite: source.includes('21') ? 'N21' : 'N20',
       source, conf: (['l', 'n', 'h'] as const)[Math.floor(rnd() * 3)], frp: Math.round(rnd() * 400) / 10,
       brightK: Math.round(310 + rnd() * 60),
+      brightI5K: null, scan: null, track: null, reportedType: null,
       daynight: rnd() > 0.5 ? 'D' : 'N', static: staticReason(lat, lon),
     }
   })
@@ -104,11 +118,21 @@ export default async function handler(req: Req, res: Res) {
     }
   }
   flagLivePersistence(out)
+  // Thermal model without CO: the teammate's own test showed CO did not improve it (80.3 % vs 80.9 %),
+  // so the live API skips the extra CAMS/Open-Meteo calls. api/lib/air.ts stays for research use.
+  for (const d of out) {
+    d.heat = assessHeat(d, heatMapEvidence(d.lat, d.lon), null)
+    d.cls = classifyHeat(d, d.heat)
+    // `static` marks anything that is not a vegetation fire (used by counts, clusters and the calendar mask)
+    if (!d.static && (d.cls.category === 'industrial' || d.cls.category === 'offshore')) d.static = `class:${d.cls.reason}`
+  }
   sendJSON(res, 200, {
     fetchedAt: new Date().toISOString(),
     sources, days, mock: isMock, errors,
     count: out.length,
-    vegetation: out.filter((d) => !d.static).length,
+    vegetation: out.filter((d) => d.cls?.category === 'fire').length,
+    uncertain: out.filter((d) => d.cls?.category === 'uncertain').length,
+    nasaLabelPeriod: nasaPeriod,
     detections: out,
   }, isMock ? 60 : 600)
 }

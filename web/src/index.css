@@ -160,3 +160,10 @@ html[lang="ar"] .label { letter-spacing: 0; }
 @media (max-width: 767px) { body { overscroll-behavior-y: none; } }
 
 @media (prefers-reduced-motion: reduce) { .fg-fire-ring { animation: none; opacity: 0; } }
+
+/* ---------- v4: heat-source classes ---------- */
+.fg-unc { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 999px; cursor: pointer;
+  background: rgb(251 191 36 / 0.18); color: #fcd34d; border: 2px dashed #fbbf24; font: 700 12px var(--font-sans); }
+.fg-src { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; cursor: pointer; color: #e2e8f0;
+  background: linear-gradient(180deg, #475569, #1e293b); border: 1.5px solid #cbd5e1; box-shadow: 0 2px 8px rgb(0 0 0 / 0.5); }
+.fg-src-off { background: linear-gradient(180deg, #0e7490, #164e63); border-color: #67e8f9; }

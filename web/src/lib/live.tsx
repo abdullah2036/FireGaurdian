@@ -12,11 +12,36 @@ import { haversineKm, provinceOf, type RegionProps } from './geo'
 export interface Detection {
   lat: number; lon: number; date: string; time: string; satellite: string; source: string
   conf: 'l' | 'n' | 'h' | 'u'; frp: number | null; brightK: number | null; daynight: string; static: string | null
+  brightI5K?: number | null; scan?: number | null; track?: number | null; reportedType?: number | null
+  heat?: {
+    category: 'volcano_candidate' | 'offshore_detection' | 'industrial_map_candidate' | 'persistent_candidate' | 'vegetation_candidate' | 'thermal_static_candidate' | 'uncertain'
+    map: { industrialMap: boolean; persistentFine: boolean; persistentCoarse: boolean }
+    livePersistence: boolean
+    thermalPattern: 'vegetation_like' | 'static_like' | 'uncertain' | 'unavailable'
+    modelStatus: 'snpp_experimental' | 'sensor_transfer_unvalidated' | 'unavailable'
+    brightnessK: number | null; brightI5K: number | null; channelDifferenceK: number | null; frpMW: number | null
+    staticIndex: number | null; vegetationIndex: number | null; usedCO: boolean; coMicrogramsM3: number | null
+    inSampleGrid: boolean; nearbyFacilities: { id: string; name: string; type: string; distanceKm: number }[]
+  }
+  /** heat-source class from api/lib/classify.ts */
+  cls?: SourceClass
 }
-export interface FirmsResp { fetchedAt: string; sources: string[]; days: number; mock: boolean; errors: string[]; count: number; vegetation: number; detections: Detection[] }
+export type SourceCategory = 'fire' | 'industrial' | 'offshore' | 'uncertain'
+export interface SourceClass {
+  category: SourceCategory; confidence: 'high' | 'medium' | 'low'
+  reason: 'nasa_offshore' | 'nasa_static' | 'gihs' | 'long_running' | 'persistent' | 'live_repeat' | 'facility' | 'nasa_fire_history' | 'thermal_model' | 'none'
+  subtype: string | null
+  facility: { name: string; nameAr?: string; type: string; km: number; source: string } | null
+  nasa: { fire: number; static: number; offshore: number; months: number }
+  staticIndex: number | null
+}
+const catOf = (d: Detection): SourceCategory => d.cls?.category ?? (d.static ? 'industrial' : 'fire')
+export interface FirmsResp { fetchedAt: string; sources: string[]; days: number; mock: boolean; errors: string[]; count: number; vegetation: number; uncertain?: number; nasaLabelPeriod?: { from: string; to: string }; detections: Detection[] }
 export interface Cluster {
   id: string; lat: number; lon: number; n: number; frpSum: number; maxFrp: number; maxBrightK: number | null
   latest: string; province: string | null; members: Detection[]
+  /** majority class of the members, the strongest evidence among them, and a named facility if any */
+  category: SourceCategory; cls: SourceClass | null; subtype: string | null
 }
 export interface RiskData { cellDeg: number; years: [number, number]; cells: [number, number, number[]][] }
 export type RiskLevel = 'high' | 'elevated' | 'low'
@@ -132,8 +157,9 @@ export function qgcPlan(m: Mission, d: Drone) {
 }
 
 // ---------- clustering ----------
-function clusterDetections(dets: Detection[], regions: FeatureCollection<Geometry, RegionProps> | null, wantStatic = false, prefix = 'C'): Cluster[] {
-  const veg = dets.filter((d) => (wantStatic ? !!d.static : !d.static)).sort((a, b) => (b.frp ?? 0) - (a.frp ?? 0))
+const RANK = { high: 3, medium: 2, low: 1 } as const
+function clusterDetections(dets: Detection[], regions: FeatureCollection<Geometry, RegionProps> | null, cats: SourceCategory[], prefix = 'C'): Cluster[] {
+  const veg = dets.filter((d) => cats.includes(catOf(d))).sort((a, b) => (b.frp ?? 0) - (a.frp ?? 0))
   const cs: { lat: number; lon: number; members: Detection[] }[] = []
   for (const d of veg) {
     const c = cs.find((c) => haversineKm(c.lat, c.lon, d.lat, d.lon) < 6)
@@ -147,10 +173,18 @@ function clusterDetections(dets: Detection[], regions: FeatureCollection<Geometr
     const frps = c.members.map((m) => m.frp ?? 0)
     const br = c.members.map((m) => m.brightK ?? 0).filter(Boolean)
     const latest = c.members.map((m) => `${m.date} ${m.time.slice(0, 2)}:${m.time.slice(2)}`).sort().at(-1)!
+    const counts = new Map<SourceCategory, number>()
+    c.members.forEach((m) => counts.set(catOf(m), (counts.get(catOf(m)) ?? 0) + 1))
+    const category = [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0]
+    const withCls = c.members.filter((m) => m.cls && catOf(m) === category).map((m) => m.cls!)
+    const best = withCls.sort((a, b) => RANK[b.confidence] - RANK[a.confidence])[0] ?? null
+    const fac = withCls.find((x) => x.facility)?.facility ?? null
     return {
       id: `${prefix}${i + 1}`, lat: c.lat, lon: c.lon, n: c.members.length,
       frpSum: frps.reduce((a, b) => a + b, 0), maxFrp: Math.max(...frps), maxBrightK: br.length ? Math.max(...br) : null,
       latest, province: provinceOf(regions, c.lat, c.lon), members: c.members,
+      category, cls: best ? { ...best, facility: fac ?? best.facility } : null,
+      subtype: category === 'offshore' ? 'offshore' : (fac?.type ?? best?.subtype ?? null),
     }
   }).sort((a, b) => b.frpSum - a.frpSum)
 }
@@ -161,14 +195,22 @@ export function severityOf(c: Cluster): 1 | 2 | 3 | 4 {
 
 // ---------- context ----------
 /** What the user selected on the map. `label` is an English fallback; UIs build localized labels from kind/id. */
-export interface Focus { lat: number; lon: number; label: string; kind?: 'fire' | 'ai' | 'zone' | 'point'; id?: string }
+export interface Focus { lat: number; lon: number; label: string; kind?: 'fire' | 'uncertain' | 'static' | 'site' | 'ai' | 'zone' | 'point'; id?: string }
+/** Known industrial heat site (web/public/data/heat-sites.json, built by pipeline/heat_sources/build.py) */
+export interface HeatSite { lat: number; lon: number; n: number; nightShare: number; type: string; name: string; source: string; km: number | null }
 
 interface LiveCtx {
   sources: string; setSources: (s: string) => void
   days: number; setDays: (d: number) => void
   firms: FirmsResp | null; loading: boolean; error: string | null; reload: () => void
   ai: AIGrid | null; aiError: string | null; aiLoading: boolean
-  clusters: Cluster[]; staticClusters: Cluster[]; risk: RiskCell[]; riskYears: [number, number] | null; month: number
+  heatSites: HeatSite[] | null; heatSitesPeriod: [string, string] | null
+  /** clusters = vegetation fires; uncertainClusters = could not tell; staticClusters = industrial/offshore heat */
+  clusters: Cluster[]; uncertainClusters: Cluster[]; staticClusters: Cluster[]; risk: RiskCell[]; riskYears: [number, number] | null; month: number
+  /** month shown by the Forecast view (0 = this month, 1 = next month) */
+  outlookOffset: number; setOutlookOffset: (n: number) => void; riskMonth: number
+  /** show the experimental day-ahead AI cells on the Forecast map */
+  aiOnMap: boolean; setAiOnMap: (b: boolean) => void
   regions: FeatureCollection<Geometry, RegionProps> | null
   focus: Focus | null; setFocus: (f: Focus) => void
   simNow: () => number; tick: number
@@ -190,6 +232,7 @@ export function LiveProvider({ children }: { children: ReactNode }) {
   const { data: regions } = useJSON<FeatureCollection<Geometry, RegionProps>>('/data/regions.geojson')
   const { data: riskRaw } = useJSON<RiskData>('/data/risk.json')
   const { data: ai, error: aiError, loading: aiLoading } = useJSON<AIGrid>('/api/ai-predict?grid=1')
+  const { data: sitesRaw } = useJSON<{ period: [string, string]; sites: HeatSite[] }>('/data/heat-sites.json')
   const month = new Date().getUTCMonth()
 
   useEffect(() => {
@@ -209,11 +252,15 @@ export function LiveProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(t)
   }, [])
 
-  const clusters = useMemo(() => (firms ? clusterDetections(firms.detections, regions) : []), [firms, regions])
-  const staticClusters = useMemo(() => (firms ? clusterDetections(firms.detections, regions, true, 'S') : []), [firms, regions])
+  const clusters = useMemo(() => (firms ? clusterDetections(firms.detections, regions, ['fire']) : []), [firms, regions])
+  const uncertainClusters = useMemo(() => (firms ? clusterDetections(firms.detections, regions, ['uncertain'], 'U') : []), [firms, regions])
+  const staticClusters = useMemo(() => (firms ? clusterDetections(firms.detections, regions, ['industrial', 'offshore'], 'S') : []), [firms, regions])
+  const [outlookOffset, setOutlookOffset] = useState(0)
+  const [aiOnMap, setAiOnMap] = useState(false)
+  const riskMonth = (month + outlookOffset) % 12
   const risk = useMemo<RiskCell[]>(
-    () => (riskRaw?.cells ?? []).map(([lat, lon, ps]) => ({ lat, lon, p: ps[month], level: riskLevel(ps[month]) })).filter((c) => c.p > 0),
-    [riskRaw, month],
+    () => (riskRaw?.cells ?? []).map(([lat, lon, ps]) => ({ lat, lon, p: ps[riskMonth], level: riskLevel(ps[riskMonth]) })).filter((c) => c.p > 0),
+    [riskRaw, riskMonth],
   )
 
   const [focusSel, setFocus] = useState<Focus | null>(null)
@@ -334,7 +381,7 @@ export function LiveProvider({ children }: { children: ReactNode }) {
 
   const value: LiveCtx = {
     sources, setSources, days, setDays, firms, loading, error, reload: () => setNonce((n) => n + 1),
-    ai, aiError, aiLoading, clusters, staticClusters, risk, riskYears: riskRaw?.years ?? null, month, regions, focus, setFocus, simNow, tick,
+    ai, aiError, aiLoading, heatSites: sitesRaw?.sites ?? null, heatSitesPeriod: sitesRaw?.period ?? null, clusters, uncertainClusters, staticClusters, outlookOffset, setOutlookOffset, riskMonth, aiOnMap, setAiOnMap, risk, riskYears: riskRaw?.years ?? null, month, regions, focus, setFocus, simNow, tick,
     missions, drones, autoResponse,
     setAutoResponse: (b) => { setAutoResponse(b); addLog(`Auto-response ${b ? 'enabled' : 'disabled'} by operator.`, 'info') },
     deploySquadron: (s) => {

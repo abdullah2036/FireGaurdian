@@ -19,3 +19,4 @@ web/dist/
 .vercel/
 *.log
 .DS_Store
+pipeline/data/cache/
