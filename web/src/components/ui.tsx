@@ -1,5 +1,6 @@
 // shadcn/ui-style wrappers over Radix primitives, themed for Fire Guardian.
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
+import { BrandLoader } from './Brand'
 import * as TooltipP from '@radix-ui/react-tooltip'
 import * as PopoverP from '@radix-ui/react-popover'
 import * as DialogP from '@radix-ui/react-dialog'
@@ -149,11 +150,7 @@ export function Badge({ children, tone = 'muted', className }: { children: React
 export function StateBox({ kind, children }: { kind: 'loading' | 'error' | 'empty'; children?: ReactNode }) {
   return (
     <div role={kind === 'error' ? 'alert' : 'status'} className="flex min-h-[200px] items-center justify-center p-6 text-sm text-muted">
-      {kind === 'loading' && (
-        <span className="inline-flex items-center gap-3">
-          <span className="h-2 w-2 animate-ping rounded-full bg-cyan" /> {children ?? 'Loading data…'}
-        </span>
-      )}
+      {kind === 'loading' && <BrandLoader label={typeof children === 'string' ? children : undefined} className="py-0" />}
       {kind === 'error' && <span className="text-danger">⚠ {children ?? 'Something went wrong.'}</span>}
       {kind === 'empty' && <span>{children ?? 'No data for this selection.'}</span>}
     </div>

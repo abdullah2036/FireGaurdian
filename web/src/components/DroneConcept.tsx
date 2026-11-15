@@ -41,9 +41,6 @@ export function ConceptVideo({ className }: { className?: string }) {
         onPause={() => setPlaying(false)}
         className="block aspect-[53/29] w-full object-cover"
       />
-      <span className="pointer-events-none absolute start-3 top-3 rounded-full border border-amber-400/50 bg-black/70 px-2.5 py-1 text-[11px] font-medium text-amber-300 backdrop-blur">
-        {t('drones.videoBadge')}
-      </span>
       <button
         onClick={toggle}
         aria-label={playing ? t('drones.pause') : t('drones.play')}

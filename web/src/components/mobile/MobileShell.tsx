@@ -7,7 +7,7 @@ import { useApp } from '@/lib/store'
 import { useLive } from '@/lib/live'
 import { LangToggle, useT, type Key } from '@/lib/i18n'
 import type { ViewId } from '@/lib/types'
-import { Logo } from '@/components/Shell'
+import { NovaMark } from '@/components/Brand'
 import { FireMap } from '@/components/FireMap'
 import { Legend, ModePanel, ModeSwitch } from '@/components/MapPanels'
 import { OperationsView } from '@/views/OperationsView'
@@ -42,7 +42,7 @@ function AppBar({ overlay }: { overlay?: boolean }) {
   return (
     <header className={cn('fixed inset-x-0 top-0 z-30 flex items-center gap-3 px-4', overlay ? 'bg-gradient-to-b from-[#04060b]/95 via-[#04060b]/70 to-transparent' : 'border-b border-white/[0.06] bg-[#05070c]/92 backdrop-blur-xl')}
       style={{ height: APPBAR, paddingTop: 'env(safe-area-inset-top)', boxSizing: 'content-box' }}>
-      <Logo size={22} />
+      <NovaMark className="h-6" />
       <span className="font-display text-[17px] font-medium">{t('app.name')}</span>
       <span className="ms-auto"><LiveDot /></span>
       <LangToggle className="!h-8 !px-2.5 !text-[12px]" />

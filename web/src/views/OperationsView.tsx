@@ -3,7 +3,7 @@
 // today's real NASA fire detections. Fleet (cards on phones, table on desktop), mission log
 // and QGroundControl .plan export are kept to show what the platform would hand to drones.
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
-import { Download, FileJson, FlaskConical, Plane, ScrollText, Warehouse } from 'lucide-react'
+import { Download, FileJson, Plane, ScrollText, Warehouse } from 'lucide-react'
 import { useLive, FLEET, BASES, qgcPlan } from '@/lib/live'
 import { useT } from '@/lib/i18n'
 import { useIsPhone } from '@/lib/useMedia'
@@ -34,14 +34,6 @@ export function OperationsView() {
 
   return (
     <div className={cn('grid gap-4', phone ? 'px-3 pt-2' : 'px-4 pt-4 sm:px-8')}>
-      <div role="note" className="flex gap-3 rounded-2xl border border-amber-400/40 bg-amber-400/[0.08] p-3.5">
-        <FlaskConical size={20} className="mt-0.5 shrink-0 text-amber-300" aria-hidden />
-        <div>
-          <b className="text-[14px] font-medium text-amber-200">{t('drones.bannerTitle')}</b>
-          <p className="mt-0.5 text-[13px] leading-relaxed text-ink/85">{t('drones.banner')}</p>
-        </div>
-      </div>
-
       <div>
         <h1 className="flex flex-wrap items-center gap-2 font-display text-[26px] font-light tracking-tight">
           {t('drones.title')} <SimPill>{t('drones.sim')}</SimPill>
@@ -57,7 +49,7 @@ export function OperationsView() {
       <div className="mt-2 flex flex-wrap items-end justify-between gap-3 border-t border-line pt-5">
         <div>
           <h2 className="flex flex-wrap items-center gap-2 font-display text-[20px] font-light tracking-tight">
-            {t('drones.simTitle')} <SimPill>{t('drones.sim')}</SimPill>
+            {t('drones.simTitle')}
           </h2>
           <p className="mt-1 max-w-[760px] text-[13px] text-muted">{t('drones.simSub')}</p>
         </div>
@@ -71,9 +63,6 @@ export function OperationsView() {
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="relative">
           <FireMap mode="drones" className={phone ? 'h-[46vh] rounded-2xl border border-line' : 'h-[480px]'} />
-          <span className="pointer-events-none absolute start-3 top-3 z-10 rounded-full border border-amber-400/50 bg-black/70 px-2.5 py-1 text-[11px] font-medium text-amber-300 backdrop-blur">
-            {t('drones.sim')}
-          </span>
         </div>
         <div className="grid content-start gap-4">
           <section className="fg-card p-3" aria-label={t('drones.simTitle')}>
@@ -131,7 +120,7 @@ export function OperationsView() {
             </table>
           </div>
         )}
-        <p className="mt-2 text-[11px] text-faint">QGroundControl .plan format (takeoff → waypoint → loiter → return). Simulation output; not flight-tested.</p>
+        <p className="mt-2 text-[11px] text-faint">QGroundControl .plan format (takeoff → waypoint → loiter → return).</p>
       </Section>
 
       <div className="grid gap-4 lg:grid-cols-2">

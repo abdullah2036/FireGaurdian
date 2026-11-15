@@ -15,3 +15,11 @@ createRoot(document.getElementById('root')!).render(
     </I18nProvider>
   </StrictMode>,
 )
+
+// Fade out the branded splash from index.html once the app has painted (shown at least ~0.5 s
+// so it does not flash on fast loads).
+const splash = document.getElementById('splash')
+if (splash) {
+  const hide = () => { splash.classList.add('hide'); setTimeout(() => splash.remove(), 400) }
+  setTimeout(hide, Math.max(120, 500 - performance.now()))
+}
