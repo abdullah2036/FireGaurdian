@@ -30,8 +30,8 @@ export function ConceptVideo({ className }: { className?: string }) {
     <figure className={cn('relative overflow-hidden rounded-2xl border border-line bg-black', className)}>
       <video
         ref={ref}
-        src="/media/drone-concept.mp4"
-        poster="/media/drone-concept-poster.jpg"
+        src="/media/drone-concept.mp4?v=ai1"
+        poster="/media/drone-concept-poster.jpg?v=ai1"
         muted
         loop
         playsInline
