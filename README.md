@@ -27,7 +27,7 @@ There is a second problem in Saudi Arabia: **most satellite hotspots are not fir
 
 ## What Fire Guardian does
 
-| | |
+| Feature | What it does |
 |---|---|
 | **One fire record, 2001 → today** | MODIS and VIIRS harmonized per region and calendar month, with flares and industrial heat masked out. The record stays valid after MODIS ends. |
 | **Fire or factory?** | Every live hotspot is classified as **vegetation fire**, **industrial heat** or **unclear**, using NASA's own labels for that spot, industrial heat inventories and a thermal-signature model. The evidence is shown for each point. |
@@ -89,21 +89,22 @@ Most of the fires it calls industrial are night-time detections inside known ind
 ## How it works
 
 ```mermaid
-flowchart LR
+flowchart TB
   subgraph OFF["Offline pipeline (Python)"]
+    direction LR
     A["FIRMS archive<br/>MODIS 2001 → · VIIRS 2012 →"] --> B["Clean and clip<br/>to Saudi borders"]
-    B --> C["Mask flares and industrial heat<br/>FIRMS type 2/3 · persistence · GIHS"]
-    C --> D["Monthly VIIRS/MODIS ratio<br/>per region and month"]
+    B --> C["Mask flares and<br/>industrial heat"]
+    C --> D["Monthly VIIRS/MODIS<br/>ratio per region"]
     D --> E[("Harmonized calendar<br/>2001 → today")]
-    L["NASA labels, NOAA-20/21<br/>185k detections"] --> F[("Heat-source<br/>evidence grid")]
+    L["NASA fire / industrial labels<br/>185k NOAA-20/21 detections"] --> F[("Heat-source<br/>evidence grid")]
   end
-  subgraph LIVE["Live (Vercel)"]
-    G["NASA FIRMS NRT<br/>NOAA-20/21 VIIRS"] --> H["API: classify each hotspot<br/>fire · industrial · unclear"]
-    F --> H
-    H --> I["Web app"]
-    E --> I
-    W["Meteomatics · NASA POWER · NASA GIBS"] --> I
+  subgraph LIVE["Live app (Vercel)"]
+    direction LR
+    G["NASA FIRMS NRT<br/>NOAA-20/21 VIIRS"] --> H["API classifies each hotspot<br/>fire · industrial · unclear"]
+    H --> I["Web app<br/>map · outlook · analytics"]
+    W["Meteomatics · NASA POWER<br/>NASA GIBS imagery"] --> I
   end
+  OFF -- "calendar + evidence grid" --> LIVE
 ```
 
 **Harmonization.** Hotspots are cleaned, clipped to the real Saudi borders and stripped of static heat sources in layers: FIRMS type 2/3 labels, ~1 km and ~5 km persistence rules (with a guard that protects seasonal farm burning) and the GIHS industrial heat inventory. For each calendar month *k*, the ratio r<sub>k</sub> = ΣVIIRS<sub>k</sub> / ΣMODIS<sub>k</sub> over the overlap years puts VIIRS on the MODIS scale. Sparse months are shrunk toward the overall ratio. The harmonized value is the mean of the available estimates, never a sum.
