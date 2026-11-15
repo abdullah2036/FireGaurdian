@@ -1,6 +1,6 @@
 // AI model validation: what the teammate's research model is, where it applies, and how it
 // compares with a seasonal baseline on 2024 (calibration) and 2025 (retrospective test).
-// Numbers come from pipeline/ai/results/metrics.json (copied to /data/ai-metrics.json).
+// Numbers come from models/day_ahead/results/metrics.json (copied to /data/ai-metrics.json).
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
 import { useJSON } from '@/lib/data'
 import { useLive } from '@/lib/live'

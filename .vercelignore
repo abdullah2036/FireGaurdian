@@ -1,5 +1,7 @@
-# Offline Python pipeline and reference material are not deployed (outputs are committed under web/).
+# Offline pipeline, models, docs and reference material are not deployed (outputs are committed under web/ and api/).
 pipeline/
+models/
+docs/
 reference/
 .venv/
 api_keys.txt

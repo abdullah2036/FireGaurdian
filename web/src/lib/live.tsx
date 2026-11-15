@@ -47,7 +47,7 @@ export interface RiskData { cellDeg: number; years: [number, number]; cells: [nu
 export type RiskLevel = 'high' | 'elevated' | 'low'
 export interface RiskCell { lat: number; lon: number; p: number; level: RiskLevel }
 
-// AI research index (teammate's model; see pipeline/ai/README_AR.md). Not a wildfire probability.
+// AI research index (teammate's model; see models/day_ahead/README_AR.md). Not a wildfire probability.
 export type AILevel = 'low' | 'elevated' | 'high'
 export interface AICell { lat: number; lon: number; scoreIndex: number | null; level: AILevel | null; weather: Record<string, number>; code?: string }
 export interface AIGrid {

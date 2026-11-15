@@ -22,8 +22,8 @@ try {
   const {default:catalog}=await import(pathToFileURL(join(dir,'api/data/industrial_sites.js')))
   const {default:gihs}=await import(pathToFileURL(join(dir,'api/data/gihs.js')))
   const {default:handler}=await import(pathToFileURL(join(dir,'api/handlers/firms.js')))
-  const fixtures=JSON.parse(await readFile(resolve(repo,'pipeline/heat-source/test-co-fixtures.json'),'utf8'))
-  const catalogCSV=(await readFile(resolve(repo,'pipeline/heat-source/industrial_sites.csv'),'utf8')).trim().split('\n').slice(1)
+  const fixtures=JSON.parse(await readFile(resolve(repo,'models/thermal_classifier/test-co-fixtures.json'),'utf8'))
+  const catalogCSV=(await readFile(resolve(repo,'models/thermal_classifier/industrial_sites.csv'),'utf8')).trim().split('\n').slice(1)
   assert.equal(catalog.length,157)
   assert.equal(catalog.length,catalogCSV.length)
   for (let i=0;i<catalog.length;i++) {

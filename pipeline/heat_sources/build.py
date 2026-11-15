@@ -36,7 +36,7 @@ from pipeline.mask import load_gihs
 ROOT = Path(__file__).resolve().parents[2]
 CACHE = ROOT / "pipeline" / "data" / "cache" / "noaa_sp"
 OSM = ROOT / "pipeline" / "data" / "heat_sources" / "osm_industrial.json"
-CT = ROOT / "pipeline" / "heat-source" / "industrial_sites.csv"
+CT = ROOT / "models" / "thermal_classifier" / "industrial_sites.csv"
 API = ROOT / "api" / "data"
 WEB = ROOT / "web" / "public" / "data"
 

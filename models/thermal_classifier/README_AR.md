@@ -40,10 +40,10 @@
 يتطلب Python وnumpy وpandas وscipy وmatplotlib وscikit-learn. سجلات FIRMS تستخدم ZIP الذي يحتوي ملف archive واحداً. يمكن تمرير CSV الكربون المرفق مضغوطاً بـgzip مباشرة:
 
 ```bash
-python pipeline/heat-source/train_with_co.py \
+python models/thermal_classifier/train_with_co.py \
   --archive pipeline/data/raw/VIIRS_DATA.zip \
   --boundary pipeline/data/boundaries/regions.geojson \
-  --facilities pipeline/heat-source/industrial_sites.csv \
+  --facilities models/thermal_classifier/industrial_sites.csv \
   --co-csv /path/to/training_CAMS_CO.csv.gz \
   --output /tmp/heat-model.json \
   --fixtures /tmp/heat-fixtures.json
@@ -52,7 +52,7 @@ python pipeline/heat-source/train_with_co.py \
 اختبار تشغيل النموذج بـJavaScript ومطابقته لعينات Python حقيقية، وحالات CO والخرائط والمصانع والقمر/المفقود (Node ‏22.18+ أو 24+):
 
 ```bash
-node pipeline/heat-source/test-integration.mjs
+node models/thermal_classifier/test-integration.mjs
 ```
 
 يجب تشغيل `npm ci && npm run typecheck` في `api` و`npm ci && npm run build` في `web` واختبار الواجهة على الجوال والحاسب في بيئة تتوفر فيها المكتبات قبل النشر؛ لم يُنجز بناء React الكامل في بيئة إعداد التحديث. نموذج الغد السابق لا يتغير.

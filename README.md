@@ -1,130 +1,187 @@
-# Fire Guardian — Detect. Predict. Protect.
+<div align="center">
 
-**NASA Space Apps Challenge 2026 · “Harmonization of MODIS and VIIRS Hot Spots”**
+<img src="docs/assets/novashift-mark.png" width="110" alt="NovaShift logo" />
 
-Fire Guardian monitors wildfires across Saudi Arabia. Its foundation is **one consistent monthly burning-activity record** built by harmonizing MODIS (1 km, 2001→) and VIIRS (375 m, 2012→) hotspots from NASA FIRMS, with gas flares and industrial heat masked out. On top of that record it shows live fires, flags high-risk areas and simulates a drone response.
+# Fire Guardian
 
-**How the site works.** The map page shows one view at a time, picked by the user:
+**Detect. Predict. Protect.**<br/>
+Wildfire monitoring for Saudi Arabia, built on one consistent NASA MODIS + VIIRS fire record.
 
-| View | What the map shows | Side panel / phone sheet |
+### [▶ Open the live app: firegaurd.vercel.app](https://firegaurd.vercel.app)
+
+[![Live app](https://img.shields.io/badge/live%20app-firegaurd.vercel.app-e8562a?style=for-the-badge)](https://firegaurd.vercel.app)
+[![NASA Space Apps 2026](https://img.shields.io/badge/NASA%20Space%20Apps-2026-0b3d91?style=for-the-badge)](https://www.spaceappschallenge.org/)
+[![Data: NASA FIRMS](https://img.shields.io/badge/live%20data-NASA%20FIRMS-1f6feb?style=for-the-badge)](https://firms.modaps.eosdis.nasa.gov/)
+
+Challenge: **Harmonization of MODIS and VIIRS Hot Spots** · Team **NovaShift**
+
+</div>
+
+![Fire Guardian: live fires over Saudi Arabia](docs/screenshots/live.jpg)
+
+## The problem
+
+NASA has watched fires from space with **MODIS** (1 km, since 2000) and now with **VIIRS** (375 m, since 2012). The sensors see the world differently. In Saudi Arabia VIIRS records **9.4× more hotspots** than MODIS, because most burning here is small farm and waste fires that 1 km MODIS misses. Splicing the two records together breaks every long-term trend, and MODIS is reaching the end of its mission.
+
+There is a second problem in Saudi Arabia: **most satellite hotspots are not fires at all.** Gas flares, refineries, power plants and factories are hot too. In our test period, **57 %** of NOAA-20/21 detections over the Kingdom were industrial or offshore heat. Treating every hotspot as a fire makes any map or forecast wrong.
+
+## What Fire Guardian does
+
+| | |
+|---|---|
+| **One fire record, 2001 → today** | MODIS and VIIRS harmonized per region and calendar month, with flares and industrial heat masked out. The record stays valid after MODIS ends. |
+| **Fire or factory?** | Every live hotspot is classified as **vegetation fire**, **industrial heat** or **unclear**, using NASA's own labels for that spot, industrial heat inventories and a thermal-signature model. The evidence is shown for each point. |
+| **Live map** | NASA FIRMS detections from NOAA-20/21 VIIRS, refreshed every 10 minutes, with satellite infrared imagery and local weather for any selected point. |
+| **Monthly outlook** | Where fires are usual this month and next, per province, from 14 years of records. |
+| **Drone response concept** | A clearly labelled simulation of how a drone fleet could respond to the fires the platform detects. |
+
+English and Arabic (right-to-left), with a native-feeling phone layout.
+
+## Try it
+
+Open **[firegaurd.vercel.app](https://firegaurd.vercel.app)** and pick what the map shows:
+
+1. **Live fires**: the fires burning now. Tap one to see why it was classified as a fire, its infrared image and the weather there.
+2. **Heat sources**: the industrial heat the satellites also see: refineries, power plants, gas flares and offshore platforms.
+3. **Forecast**: where fires are common this month and next.
+4. **Danger zones**: only fires burning now and places that burn in most years this month.
+
+Then open **Analytics** for the harmonized fire calendar and the model validation, and **Drone demo** for the response concept.
+
+## Screenshots
+
+| Heat sources: fire or factory | Monthly outlook |
+|---|---|
+| ![Heat sources view](docs/screenshots/sources.jpg) | ![Forecast view](docs/screenshots/forecast.jpg) |
+| **Harmonized MODIS + VIIRS calendar** | **Model validation** |
+| ![Analytics](docs/screenshots/analytics.jpg) | ![AI models](docs/screenshots/aimodel.jpg) |
+
+| Drone response concept | On a phone |
+|---|---|
+| ![Drone demo](docs/screenshots/drones.jpg) | ![Phone layout](docs/screenshots/phone.jpg) |
+
+## Results
+
+### Harmonized MODIS + VIIRS record (Saudi Arabia, flares masked)
+
+| | Saudi Arabia | South-west (Al Baha · Asir · Jazan) |
 |---|---|---|
-| **Live fires** (default) | Hotspots from NASA FIRMS (NOAA-20/21 VIIRS) that the heat-source classifier calls **vegetation fires** (pulsing flames, sized by strength) and the few it cannot decide (amber "?") | Fire count with a 24 h / 2 days / 5 days switch, how many heat points were fires vs industrial vs unclear, fire list, selected fire with "why we think so" and the VIIRS infrared image, weather |
-| **Heat sources** | Hotspots classified as **industrial or offshore heat**: factories, power plants, gas flares, oil & gas plants, refineries (icons by type), plus 202 known industrial heat sites | Count by type, named sources detected now (e.g. Ras Tanura refinery, Juaymah power plant, Tanajib gas plant), evidence for each |
-| **Forecast** | Where fires are common in the chosen month (this month / next month), from 14 years of records | Monthly outlook per province (typical detections, peak or quiet season). The day-ahead AI model is shown only on request because it is no better than the monthly pattern |
-| **Danger zones** | Only fires burning now and places that burn in most years this month | Counts and lists, weather |
+| FIRMS detections → kept after flare and industrial mask | 629,262 → 52,051 | 3,438 |
+| VIIRS / MODIS ratio, 2012 → 2026 | **9.4×** | **6.4×** |
+| Monthly correlation, MODIS vs VIIRS | r = 0.50 (log 0.69) | r = 0.90 |
+| Leave-one-year-out error, **harmonized** | **13.1 %** | **11.1 %** |
+| Same error if raw VIIRS were spliced onto MODIS | 878 % | 504 % |
 
-**Fire or factory? The heat-source classifier.** In Saudi Arabia most satellite hotspots are not fires: in May–Jul 2026, 15,669 of 27,600 NOAA-20/21 detections were industrial or offshore heat according to NASA. Every live hotspot is classified (`api/lib/classify.ts`) from real evidence, strongest first:
-1. NASA's own labels for that spot. FIRMS standard-processing data for NOAA-20/21 tags each detection as vegetation fire (type 0), static land source (2) or offshore (3). 185k labelled detections (Aug 2024–Jul 2026) are gridded at ~500 m.
-2. GIHS industrial heat-source polygons (satellite inventory 2012–2021).
-3. A long-running spot: heat at one place in 6 or more different months is not a vegetation fire. On the test, NASA-"fire" spots like that were 76 % night-time, like industrial heat (90 %), versus 29 % for genuine fire spots.
+Large-wildfire regions such as Portugal show a ratio near 2.8. Saudi burning is mostly small fires that MODIS misses, which is why the ratio is learned **per region and calendar month**, not as one global factor.
+
+### Fire vs industrial heat classifier
+
+Tested on **27,600** NOAA-20/21 detections from **May–Jul 2026**, months the classifier never saw, against NASA's own fire / industrial labels:
+
+| NASA label | Classified correctly | Left unclear |
+|---|---|---|
+| Industrial or offshore heat (15,669) | **99.96 %** | 0 % |
+| Vegetation fire (11,931) | **72 %** | 0.8 % |
+| **All decided points** | **88.0 %** | 0.3 % |
+
+Most of the fires it calls industrial are night-time detections inside known industrial areas, so they are probably gas flares that NASA labelled as fires. The teammate's thermal-signature model, trained on Suomi NPP, transfers to NOAA-20/21 with **AUC 0.92**. Carbon monoxide (CAMS) was tested and did not improve it, so it is not used live.
+
+## How it works
+
+```mermaid
+flowchart LR
+  subgraph OFF["Offline pipeline (Python)"]
+    A["FIRMS archive<br/>MODIS 2001 → · VIIRS 2012 →"] --> B["Clean and clip<br/>to Saudi borders"]
+    B --> C["Mask flares and industrial heat<br/>FIRMS type 2/3 · persistence · GIHS"]
+    C --> D["Monthly VIIRS/MODIS ratio<br/>per region and month"]
+    D --> E[("Harmonized calendar<br/>2001 → today")]
+    L["NASA labels, NOAA-20/21<br/>185k detections"] --> F[("Heat-source<br/>evidence grid")]
+  end
+  subgraph LIVE["Live (Vercel)"]
+    G["NASA FIRMS NRT<br/>NOAA-20/21 VIIRS"] --> H["API: classify each hotspot<br/>fire · industrial · unclear"]
+    F --> H
+    H --> I["Web app"]
+    E --> I
+    W["Meteomatics · NASA POWER · NASA GIBS"] --> I
+  end
+```
+
+**Harmonization.** Hotspots are cleaned, clipped to the real Saudi borders and stripped of static heat sources in layers: FIRMS type 2/3 labels, ~1 km and ~5 km persistence rules (with a guard that protects seasonal farm burning) and the GIHS industrial heat inventory. For each calendar month *k*, the ratio r<sub>k</sub> = ΣVIIRS<sub>k</sub> / ΣMODIS<sub>k</sub> over the overlap years puts VIIRS on the MODIS scale. Sparse months are shrunk toward the overall ratio. The harmonized value is the mean of the available estimates, never a sum.
+
+**Classification.** Each live hotspot is checked against, strongest evidence first:
+1. NASA's own fire / static / offshore labels for that ~500 m spot (Aug 2024 – Jul 2026).
+2. GIHS industrial heat polygons.
+3. Heat seen at the same spot in 6 or more different months, which a vegetation fire does not do.
 4. NASA fire history at that spot.
-5. A teammate's thermal-signature model (gradient-boosted trees on I4/I5 brightness, FRP, pixel size, day/night, distance to the nearest plant). Trained on Suomi NPP; on NOAA-20/21 it scores AUC 0.9223.
-Named facilities (Climate TRACE 2025: 157 plants; OpenStreetMap: 2,158 flares, oil & gas, power, cement, steel and petrochemical sites) only name a source; they never decide. Carbon monoxide (CAMS) was tested by the teammate and did not help (80.3 % vs 80.9 %), so the live site does not use it.
+5. The thermal-signature model (I4/I5 brightness, fire radiative power, pixel size, day/night, distance to the nearest plant), for places with no history.
 
-**Tested on months it never saw** (location labels from Aug 2024–Apr 2026, test May–Jul 2026, scored against NASA labels): 99.96 % of industrial points and 72 % of fires classified correctly; accuracy on decided points 88.0 %; 0.3 % left uncertain. Most of the "fire → industrial" disagreements are inside GIHS industrial areas or at long-running spots and are night-time, so they are probably flares that NASA labelled as fires. The live classifier and the evaluated Python version agree on 99.7 % of detections. Rebuild with `python -m pipeline.heat_sources.fetch_noaa_sp`, `fetch_osm`, then `build`.
+Facility names from Climate TRACE (157 plants) and OpenStreetMap (2,158 sites) only label a source; they never decide the class.
 
-Tapping a fire, an area or anywhere on the map selects it, and the weather and details follow the selection. **Analytics** holds the harmonized fire calendar, the harmonization validation and the AI model page. **Drone demo** is a showcase of how drones could work with the platform, clearly marked as not real: the team's concept video (silent, upscaled 2× and sharpened), a "how it would work" strip that separates what runs today (detection and classification) from the concept (dispatch and response), and a simulated fleet flown over today's real fires (map with flights, fleet, mission log, QGroundControl `.plan` export).
+**Outlook.** For each province and month, the typical number of fire detections over 2012–2025, marked as peak or quiet season. A teammate's day-ahead weather model is included for reference but is off by default, because on the 2025 test it was no better than this monthly pattern.
 
-**Phones.** On screens narrower than 768 px (or short touch screens in landscape) the app switches to a phone layout: full-screen map, view chips, a draggable bottom sheet and a bottom tab bar (`web/src/components/mobile/MobileShell.tsx`). It can also be added to the home screen (web manifest).
+## Data sources
 
-**Languages.** English and Arabic, with right-to-left layout in Arabic, from one file: `web/src/lib/i18n.tsx`. The detailed Analytics charts stay in English. To go English-only, remove `<LangToggle />` from `Shell.tsx` and `MobileShell.tsx`.
+| Source | Used for |
+|---|---|
+| [NASA FIRMS](https://firms.modaps.eosdis.nasa.gov/) | MODIS C6.1 and VIIRS C2 archive (record), NOAA-20/21 VIIRS NRT (live), standard-processing labels (classifier evidence and test set) |
+| [NASA GIBS](https://www.earthdata.nasa.gov/engage/open-data-services-software/earthdata-developer-portal/gibs-api) | Blue Marble and VIIRS true-colour basemaps, VIIRS infrared imagery |
+| [NASA POWER](https://power.larc.nasa.gov/) | Weather inputs for the day-ahead model |
+| [GIHS v3.0](https://doi.org/10.5281/zenodo.8308133) | Industrial heat-source polygons (Ma et al. 2024, CC BY 4.0) |
+| [Climate TRACE](https://climatetrace.org/) · [OpenStreetMap](https://www.openstreetmap.org/) | Names of industrial facilities (CC BY 4.0 · ODbL) |
+| [Meteomatics](https://www.meteomatics.com/) | Point weather for the selected place |
+| [Natural Earth](https://www.naturalearthdata.com/) | Country and province boundaries |
 
-**Risk layers.**
-- *Seasonal baseline* (all KSA, orange/yellow): for each 0.25° cell, the share of years (2012–2025) with at least one flare-masked hotspot in the current calendar month (`web/public/data/risk.json`, ≥ 50 % = high, ≥ 20 % = elevated).
-- *AI research index* (SW pilot, dashed cells, **off by default**): a teammate's logistic-regression model on NASA POWER weather scores **tomorrow** (03:00–03:00 Saudi time) for 29 cells of 0.5° × 0.625° in Jazan, Asir and Al Baha. It predicts whether a cell will have a flare-filtered VIIRS vegetation detection, using weather from 3 days earlier because of NASA POWER's publishing delay. Shown as Low (< 1) / Elevated (≥ 1) / High (≥ 5) with each level's observed 2025 hit rate (0.9 % / 2.8 % / 7.5 %). It is **not** a wildfire probability. On the 2025 retrospective test it is roughly level with the seasonal baseline: average precision 0.050 vs 0.046, and 52 vs 57 detections caught in the top 10 %. Details are in Analytics → AI model and `pipeline/ai/` (README_AR.md, train_model.py, results/, test_integration.mjs).
+## Tech stack
 
-**Drone simulation** (Drone demo page only; a concept, not a working system). Bases are illustrative staging points at regional cities. Cruise speed is 110 km/h, range 180 km, and the clock runs ×30. Nothing has been tested on hardware.
+**Web:** React 19, TypeScript, Vite, Tailwind CSS, MapLibre GL, ECharts · **API:** Node.js + Express on Vercel · **Pipeline:** Python (pandas, NumPy, Shapely) · **Models:** gradient-boosted trees and logistic regression (scikit-learn), exported to plain JavaScript for the API.
 
-## Key results (Saudi Arabia, flares masked)
-
-| | KSA | SW KSA (Al Baha · Asir · Jazan) |
-|---|---|---|
-| Detections in the FIRMS window → kept after mask | 629,262 → 52,051 | 3,438 |
-| Overall VIIRS / MODIS ratio (2012-02 → 2026-10) | **9.4×** | **6.4×** |
-| Monthly Pearson r (MODIS vs VIIRS) | 0.50 (log 0.69) | 0.90 |
-| Leave-one-year-out median annual error — harmonized | **13.1 %** | 11.1 % |
-| Same, if raw VIIRS were spliced onto MODIS | 878 % | 504 % |
-
-Large-wildfire regions such as Portugal show a ratio of about 2.8. Saudi burning is mostly small agricultural and waste fires: 1 km MODIS misses most of them, while 375 m VIIRS detects them. That is why Fire Guardian learns the ratio **per region and calendar month** instead of using one global factor. The lower KSA-wide correlation comes from small residual industrial sources in the Eastern Province and Riyadh. Vegetation-dominated regions correlate strongly (Al Baha r = 0.98, SW KSA 0.90).
-
-## Method (summary)
-
-1. **Clean**: merge FIRMS archive and NRT files (the archive wins in overlapping months), normalize the schema (MODIS confidence 0–100 and VIIRS `l/n/h` become one scale), keep `type` 0 or missing, and clip to the real Natural Earth polygons (not a bounding box).
-2. **Mask static heat sources**, in layers:
-   - FIRMS type 2 (static land source) and type 3 (offshore).
-   - ~1 km cells with type-2 detections, so NRT points in those cells are masked too.
-   - ~1 km persistence: ≥ 8 distinct months, ≥ 3 years, and ≥ 4 months within one year. The one-year rule protects stubble-burning farms.
-   - ~5 km night-time persistence: night fraction ≥ 0.4 and persistent. This catches flares whose detections drift between 1 km cells.
-   - **GIHS** industrial polygons (Ma et al. 2024, *Scientific Data*, [Zenodo 10.5281/zenodo.8308133](https://doi.org/10.5281/zenodo.8308133), CC BY 4.0).
-   - Live only: within the FIRMS window, points seen on ≥ 2 overpasses within 1.5 km and ≥ 50 % at night are flagged as flares. Saudi vegetation fires are short-lived and mostly daytime.
-3. **Aggregate** hotspots per month for each sensor family: MODIS (Terra + Aqua) and VIIRS (S-NPP).
-4. **Ratio**: for each calendar month k, r_k = ΣVIIRS_k / ΣMODIS_k over the overlap years. Sparse months are shrunk toward the overall ratio with weight n/(n+60).
-5. **Harmonize**: VIIRS ÷ r_k puts VIIRS on the MODIS scale. The harmonized value is the **mean** of the available MODIS-scale estimates, **never a sum**. The record runs from 2001 to today and stays valid after MODIS ends.
-6. **Validate**: leave-one-year-out prediction of MODIS annual and monthly totals from VIIRS, plus correlation.
-
-**Caveats shown in the UI:** MODIS is Terra-only before July 2002. Missing data ≠ zero fire. Hotspots ≠ individual fires. Never sum MODIS and VIIRS counts. Suomi NPP stopped producing data on 2 Nov 2026, so live monitoring uses NOAA-20/21.
-
-## Repository layout
+## Repository structure
 
 ```
-pipeline/            Python offline processing  →  web/public/data/*.json, api/data/*.js
-  ai/                teammate's AI research model: training script, metrics, reference examples, integration tests
-  data/raw/          FIRMS downloads (MODIS_DATA.zip, VIIRS_DATA.zip: archive + NRT CSVs, KSA window)
-  data/boundaries/   regions.geojson (Natural Earth, KSA + provinces + SW KSA), committed
-  data/gihs/         GIHS polygons clipped to the KSA window, committed
-vercel.json          Vercel Services config: "web" (Vite site) + "api" (Express, routed from /api/*)
-api/                 API service: firms (FIRMS proxy), weather (Meteomatics proxy), ai-predict (AI research index), health
-  data/              flare-mask cells, KSA border, GIHS polygons (generated by the pipeline), ai-model.js (trained model)
-web/                 Vite + React + TypeScript + Tailwind, Radix/shadcn-style UI, MapLibre GL, ECharts
-  public/data/       precomputed calendar JSON per region, risk.json, grid, boundaries
-reference/           SAFIRE Streamlit prototype (teammate’s original)
+web/                    React app (Vite)
+  src/views/            pages: map, analytics, AI models, drone demo, about
+  src/components/       map, panels, phone layout
+  public/data/          precomputed calendar, risk, outlook and evaluation data
+api/                    Express API, deployed as a Vercel service
+  handlers/             /api/firms · /api/weather · /api/ai-predict · /api/health
+  lib/classify.ts       fire vs industrial classifier
+  data/                 evidence grids and models generated by the pipeline
+pipeline/               Python: harmonization, flare mask, heat-source evidence
+models/
+  thermal_classifier/   teammate's thermal-signature model: training, data, tests
+  day_ahead/            teammate's day-ahead fire model: training, metrics, tests
+docs/                   screenshots and logo
+vercel.json             two Vercel services: web + api
 ```
 
 ## Run locally
 
 ```bash
-# 1. Pipeline (Python 3.11+); re-runnable with one command
-python -m venv .venv && .venv/Scripts/activate      # macOS/Linux: source .venv/bin/activate
-pip install -r pipeline/requirements.txt
-python -m pipeline.build
-
-# 2. Web app
+# Web app and API
 cd web
-cp .env.example .env.local     # fill in keys (optional: without them /api/firms returns labelled mock data)
+cp .env.example .env.local     # optional keys; without them the API returns labelled sample data
 npm install
-npm run dev                    # http://localhost:5173 (also serves /api/* locally)
+npm run dev                    # http://localhost:5173
+
+# Rebuild the data (Python 3.11+)
+pip install -r pipeline/requirements.txt
+python -m pipeline.build                       # harmonized calendar, risk, outlook
+python -m pipeline.heat_sources.fetch_noaa_sp  # NASA labels (needs FIRMS_MAP_KEY)
+python -m pipeline.heat_sources.fetch_osm
+python -m pipeline.heat_sources.build          # classifier evidence + evaluation
+
+# Model tests
+node models/thermal_classifier/test-integration.mjs
 ```
 
-## Deploy (Vercel)
+**Keys** (`FIRMS_MAP_KEY`, `METEOMATICS_USER`, `METEOMATICS_PASS`) live only in environment variables. `web/.env.example` shows the names; real keys are never committed. `/api/health` reports which keys are set, never their values. Every push to `main` deploys to Vercel.
 
-1. Import the GitHub repo in Vercel and leave **Root Directory** at the repo root. The root `vercel.json` defines two services: **`web`** (`web/`, the Vite site) and **`api`** (`api/`, an Express app that `/api/*` is routed to). The Python `pipeline/` is offline tooling: it is not deployed (see `.vercelignore`) and its outputs are committed under `web/`.
-2. In **Settings → Environment Variables**, add `FIRMS_MAP_KEY`, `METEOMATICS_USER` and `METEOMATICS_PASS`, then redeploy.
-3. Every push to `main` deploys automatically. Check `/api/health` to see which keys are configured (it reports true or false, never the values).
+## Team and credits
 
-Secrets live only in environment variables. `.env.example` is committed, while `.env.local` and `api_keys.txt` are gitignored. API responses are cached in memory and through `s-maxage` headers (FIRMS: 10 min), which keeps usage within the Meteomatics limit of 1,000 queries per day.
+Built by **Team NovaShift** for the NASA Space Apps Challenge 2026. Fire Guardian grew out of **SAFIRE**, a teammate's Streamlit prototype for Saudi fire early warning, and includes two teammate models: the thermal-signature classifier and the day-ahead fire model (see [`models/`](models/)).
 
-## Data sources
-
-- **NASA FIRMS**: MODIS C6.1 and VIIRS S-NPP C2 active fire archive and NRT; live NOAA-20/21 VIIRS through the Area API.
-- **GIHS v3.0**: Global Remote Industrial Heat Sources (CC BY 4.0).
-- **Natural Earth**: 1:10m admin-0 and admin-1 boundaries (public domain).
-- **NASA GIBS**: Blue Marble relief and daily VIIRS true-colour basemaps, VIIRS SWIR imagery for the thermal feed.
-- **Meteomatics**: point weather through `/api/weather` (snapped to 0.25°, cached 30 min to respect the 1,000 queries/day limit).
-- **NASA FIRMS standard processing** (NOAA-20/21, with NASA's fire/static/offshore labels): the heat-source classifier's location evidence and its test set.
-- **Climate TRACE** 2025 facility inventory (CC BY 4.0) and **OpenStreetMap** (ODbL): names of industrial heat sources.
-- **NASA POWER** (daily point/regional API, no key): weather inputs for the AI research index via `/api/ai-predict` (`?grid=1` for all 29 cells, cached 30 min).
-
-## Credits
-
-Built on **SAFIRE**, a teammate’s Streamlit prototype for Saudi fire early warning (`reference/`). Its FIRMS fetch, CSV export and honest limitations text were carried over. Three known bugs were fixed along the way:
-- VIIRS confidence is `l/n/h`, not `low/nominal/high`.
-- The Saudi border polygon replaces the rectangular bounding box.
-- WebGL rendering replaces one Folium marker per point.
-
-## AI tools used
-
-We used **Claude** (Anthropic) for planning and **Claude Code** to write code. Generated source files carry a short header comment noting AI assistance, as the Space Apps rules require. The team reviewed every data-processing decision, and the results are validated in the app's Method & Data view.
+**AI use.** We used Claude (Anthropic) and Claude Code to plan and write code; generated source files carry a header comment saying so, as the Space Apps rules require. The drone concept video was AI-generated by the team and upscaled with Real-ESRGAN. The team reviewed every data-processing decision, and every model is validated against held-out data in the app.
 
 ## Limitations
 
-Fire Guardian is a research and demonstration tool. It is not an official warning system and does not replace the Saudi Civil Defense, and the drone fleet is a simulation. Some industrial heat may remain after masking, especially in the Eastern Province. Satellite revisit times, cloud and fire size all limit what the sensors detect.
+Fire Guardian is a research and demonstration tool. It is not an official warning system and does not replace the Saudi Civil Defense. The drone page is a simulation. Satellite revisit times, cloud and small fire size limit what the sensors detect; a missing detection does not prove there was no fire. Suomi NPP stopped producing data on 2 Nov 2026, so live monitoring uses NOAA-20/21.

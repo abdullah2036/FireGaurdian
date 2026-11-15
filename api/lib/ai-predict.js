@@ -90,7 +90,7 @@ export async function requestPower(lat, lon, weatherDate, fetchImpl = fetch) {
 
 /**
  * Relative levels on the model's own scale (index = score × 100). Thresholds follow the
- * calibration bins in pipeline/ai/results/metrics.json. `observed2025` is how often cell-days in
+ * calibration bins in models/day_ahead/results/metrics.json. `observed2025` is how often cell-days in
  * that band actually had a retained VIIRS detection in the 2025 retrospective test — the honest
  * uncertainty statement for each level (Low 63/7396, Elevated 80/2818, High 28/371).
  */
