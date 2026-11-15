@@ -7,9 +7,9 @@
 **Detect. Predict. Protect.**<br/>
 Wildfire monitoring for Saudi Arabia, built on one consistent NASA MODIS + VIIRS fire record.
 
-### [▶ Open the live app: firegaurd.vercel.app](https://firegaurd.vercel.app)
+### [▶ Open the live app: fireguardian.vercel.app](https://fireguardian.vercel.app)
 
-[![Live app](https://img.shields.io/badge/live%20app-firegaurd.vercel.app-e8562a?style=for-the-badge)](https://firegaurd.vercel.app)
+[![Live app](https://img.shields.io/badge/live%20app-fireguardian.vercel.app-e8562a?style=for-the-badge)](https://fireguardian.vercel.app)
 [![NASA Space Apps 2026](https://img.shields.io/badge/NASA%20Space%20Apps-2026-0b3d91?style=for-the-badge)](https://www.spaceappschallenge.org/)
 [![Data: NASA FIRMS](https://img.shields.io/badge/live%20data-NASA%20FIRMS-1f6feb?style=for-the-badge)](https://firms.modaps.eosdis.nasa.gov/)
 
@@ -39,7 +39,7 @@ English and Arabic (right-to-left), with a native-feeling phone layout.
 
 ## Try it
 
-Open **[firegaurd.vercel.app](https://firegaurd.vercel.app)** and pick what the map shows:
+Open **[fireguardian.vercel.app](https://fireguardian.vercel.app)** and pick what the map shows:
 
 1. **Live fires**: the fires burning now. Tap one to see why it was classified as a fire, its infrared image and the weather there.
 2. **Heat sources**: the industrial heat the satellites also see: refineries, power plants, gas flares and offshore platforms.
