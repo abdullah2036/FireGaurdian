@@ -23,7 +23,7 @@ Named facilities (Climate TRACE 2025: 157 plants; OpenStreetMap: 2,158 flares, o
 
 **Tested on months it never saw** (location labels from Aug 2024–Apr 2026, test May–Jul 2026, scored against NASA labels): 99.96 % of industrial points and 72 % of fires classified correctly; accuracy on decided points 88.0 %; 0.3 % left uncertain. Most of the "fire → industrial" disagreements are inside GIHS industrial areas or at long-running spots and are night-time, so they are probably flares that NASA labelled as fires. The live classifier and the evaluated Python version agree on 99.7 % of detections. Rebuild with `python -m pipeline.heat_sources.fetch_noaa_sp`, `fetch_osm`, then `build`.
 
-Tapping a fire, an area or anywhere on the map selects it, and the weather and details follow the selection. **Analytics** holds the harmonized fire calendar, the harmonization validation and the AI model page. **Drones** holds the drone-response simulation (map with flights, simulated camera, fleet, mission log, QGroundControl `.plan` export).
+Tapping a fire, an area or anywhere on the map selects it, and the weather and details follow the selection. **Analytics** holds the harmonized fire calendar, the harmonization validation and the AI model page. **Drone demo** is a showcase of how drones could work with the platform, clearly marked as not real: the team's concept video (silent, upscaled 2× and sharpened), a "how it would work" strip that separates what runs today (detection and classification) from the concept (dispatch and response), and a simulated fleet flown over today's real fires (map with flights, fleet, mission log, QGroundControl `.plan` export).
 
 **Phones.** On screens narrower than 768 px (or short touch screens in landscape) the app switches to a phone layout: full-screen map, view chips, a draggable bottom sheet and a bottom tab bar (`web/src/components/mobile/MobileShell.tsx`). It can also be added to the home screen (web manifest).
 
@@ -33,7 +33,7 @@ Tapping a fire, an area or anywhere on the map selects it, and the weather and d
 - *Seasonal baseline* (all KSA, orange/yellow): for each 0.25° cell, the share of years (2012–2025) with at least one flare-masked hotspot in the current calendar month (`web/public/data/risk.json`, ≥ 50 % = high, ≥ 20 % = elevated).
 - *AI research index* (SW pilot, dashed cells, **off by default**): a teammate's logistic-regression model on NASA POWER weather scores **tomorrow** (03:00–03:00 Saudi time) for 29 cells of 0.5° × 0.625° in Jazan, Asir and Al Baha. It predicts whether a cell will have a flare-filtered VIIRS vegetation detection, using weather from 3 days earlier because of NASA POWER's publishing delay. Shown as Low (< 1) / Elevated (≥ 1) / High (≥ 5) with each level's observed 2025 hit rate (0.9 % / 2.8 % / 7.5 %). It is **not** a wildfire probability. On the 2025 retrospective test it is roughly level with the seasonal baseline: average precision 0.050 vs 0.046, and 52 vs 57 detections caught in the top 10 %. Details are in Analytics → AI model and `pipeline/ai/` (README_AR.md, train_model.py, results/, test_integration.mjs).
 
-**Drone simulation** (Drones page only). Bases are illustrative staging points at regional cities. Cruise speed is 110 km/h, range 180 km, and the clock runs ×30. Nothing has been tested on hardware.
+**Drone simulation** (Drone demo page only; a concept, not a working system). Bases are illustrative staging points at regional cities. Cruise speed is 110 km/h, range 180 km, and the clock runs ×30. Nothing has been tested on hardware.
 
 ## Key results (Saudi Arabia, flares masked)
 
@@ -110,7 +110,6 @@ Secrets live only in environment variables. `.env.example` is committed, while `
 - **Natural Earth**: 1:10m admin-0 and admin-1 boundaries (public domain).
 - **NASA GIBS**: Blue Marble relief and daily VIIRS true-colour basemaps, VIIRS SWIR imagery for the thermal feed.
 - **Meteomatics**: point weather through `/api/weather` (snapped to 0.25°, cached 30 min to respect the 1,000 queries/day limit).
-- **Sentinel-2 cloudless** (EOX, contains modified Copernicus data): aerial still behind the simulated drone camera.
 - **NASA FIRMS standard processing** (NOAA-20/21, with NASA's fire/static/offshore labels): the heat-source classifier's location evidence and its test set.
 - **Climate TRACE** 2025 facility inventory (CC BY 4.0) and **OpenStreetMap** (ODbL): names of industrial heat sources.
 - **NASA POWER** (daily point/regional API, no key): weather inputs for the AI research index via `/api/ai-predict` (`?grid=1` for all 29 cells, cached 30 min).

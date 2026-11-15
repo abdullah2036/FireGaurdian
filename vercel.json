@@ -9,11 +9,15 @@
       "outputDirectory": "dist",
       "headers": [
         {
+          "source": "/media/(.*)",
+          "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
+        },
+        {
           "source": "/data/(.*)",
           "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600, stale-while-revalidate=86400" }]
         }
       ],
-      "rewrites": [{ "source": "/((?!api/|data/|assets/).*)", "destination": "/index.html" }]
+      "rewrites": [{ "source": "/((?!api/|data/|assets/|media/).*)", "destination": "/index.html" }]
     },
     "api": {
       "root": "api",

@@ -109,13 +109,6 @@ body {
 @keyframes fg-blink { 50% { opacity: 0.45; } }
 
 .fg-hot { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 999px; background: #ff7a3d; box-shadow: 0 0 12px 5px rgb(255 122 61 / 0.8); }
-.fg-hud { background: linear-gradient(180deg, rgb(0 0 0 / 0.45), transparent 30%, transparent 55%, rgb(0 0 0 / 0.7)); color: #fff; }
-.fg-reticle { position: absolute; left: 50%; top: 46%; width: 54px; height: 54px; margin: -27px 0 0 -27px; border: 1px solid rgb(255 255 255 / 0.55); border-radius: 999px; }
-.fg-reticle::before, .fg-reticle::after { content: ""; position: absolute; background: rgb(255 255 255 / 0.55); }
-.fg-reticle::before { left: 50%; top: -10px; bottom: -10px; width: 1px; }
-.fg-reticle::after { top: 50%; left: -10px; right: -10px; height: 1px; }
-.fg-kenburns { animation: fg-kb 30s ease-in-out infinite alternate; transform-origin: center; }
-@keyframes fg-kb { from { transform: scale(1.05); } to { transform: scale(1.35) translate(-2%, 1%); } }
 
 .fg-earth {
   background-size: 70% auto; background-position: 18% 100%; background-repeat: no-repeat; background-color: #0b1a33;
@@ -134,7 +127,7 @@ body {
 .maplibregl-ctrl-attrib-button { filter: invert(1); }
 
 @media (prefers-reduced-motion: reduce) {
-  .fg-flame-big, .fg-kenburns, .fg-drone[data-status="Active"] .fg-drone-dot { animation: none; }
+  .fg-flame-big, .fg-drone[data-status="Active"] .fg-drone-dot { animation: none; }
 }
 
 /* ---------- v3: simplified map, phone shell, Arabic ---------- */

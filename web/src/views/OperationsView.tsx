@@ -1,34 +1,65 @@
-// Drones page: the drone-fleet SIMULATION (hardware not tested), kept off the main map.
-// Map with drones, live drone feed, controls, fleet (cards on phones, table on desktop),
-// mission log and QGroundControl .plan export.
+// Drones page: a SHOWCASE of how drones could work with Fire Guardian. Nothing here is real
+// hardware: the concept video is an animation and the fleet below is a simulation flown over
+// today's real NASA fire detections. Fleet (cards on phones, table on desktop), mission log
+// and QGroundControl .plan export are kept to show what the platform would hand to drones.
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
-import { Download, FileJson, Plane, ScrollText, Warehouse } from 'lucide-react'
+import { Download, FileJson, FlaskConical, Plane, ScrollText, Warehouse } from 'lucide-react'
 import { useLive, FLEET, BASES, qgcPlan } from '@/lib/live'
 import { useT } from '@/lib/i18n'
 import { useIsPhone } from '@/lib/useMedia'
 import { FireMap } from '@/components/FireMap'
-import { ControlsCard, DroneFeedCard } from '@/components/panels'
+import { ControlsCard } from '@/components/panels'
+import { ConceptVideo, HowItWouldWork } from '@/components/DroneConcept'
 import { Section } from '@/components/MapPanels'
 import { downloadText, cn } from '@/lib/utils'
 
 const tone = (s: string) => s === 'Active' ? 'text-red-300' : s === 'Deploying' ? 'text-amber-300' : s === 'Returning' ? 'text-cyan' : 'text-muted'
+
+function SimPill({ children }: { children: string }) {
+  return <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-2.5 py-0.5 text-[12px] font-medium text-amber-300">{children}</span>
+}
 
 export function OperationsView() {
   const live = useLive()
   const { t } = useT()
   const phone = useIsPhone()
   const busy = live.drones.filter((d) => d.mission && d.status !== 'Standby')
+  const onTarget = live.drones.filter((d) => d.status === 'Active').length
   const plan = (d: (typeof busy)[number]) => downloadText(`${d.drone.id}-${d.mission!.kind}.plan`, JSON.stringify(qgcPlan(d.mission!, d.drone), null, 2), 'application/json')
   const exportAll = () => downloadText('fire-guardian-missions.json', JSON.stringify(busy.map((d) => ({ drone: d.drone.id, plan: qgcPlan(d.mission!, d.drone) })), null, 2), 'application/json')
+  const stats: [number, string][] = [
+    [FLEET.length, t('drones.statDrones')], [busy.length, t('drones.statMission')],
+    [onTarget, t('drones.statTarget')], [BASES.length, t('drones.statBases')],
+  ]
 
   return (
     <div className={cn('grid gap-4', phone ? 'px-3 pt-2' : 'px-4 pt-4 sm:px-8')}>
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div role="note" className="flex gap-3 rounded-2xl border border-amber-400/40 bg-amber-400/[0.08] p-3.5">
+        <FlaskConical size={20} className="mt-0.5 shrink-0 text-amber-300" aria-hidden />
         <div>
-          <h1 className="flex items-center gap-2 font-display text-[26px] font-light tracking-tight">
-            {t('drones.title')} <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-2.5 py-0.5 text-[12px] font-medium text-amber-300">{t('drones.sim')}</span>
-          </h1>
-          <p className="mt-1 max-w-[760px] text-[13.5px] text-muted">{t('drones.sub')}</p>
+          <b className="text-[14px] font-medium text-amber-200">{t('drones.bannerTitle')}</b>
+          <p className="mt-0.5 text-[13px] leading-relaxed text-ink/85">{t('drones.banner')}</p>
+        </div>
+      </div>
+
+      <div>
+        <h1 className="flex flex-wrap items-center gap-2 font-display text-[26px] font-light tracking-tight">
+          {t('drones.title')} <SimPill>{t('drones.sim')}</SimPill>
+        </h1>
+        <p className="mt-1 max-w-[760px] text-[13.5px] text-muted">{t('drones.sub')}</p>
+      </div>
+
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+        <ConceptVideo />
+        <HowItWouldWork />
+      </div>
+
+      <div className="mt-2 flex flex-wrap items-end justify-between gap-3 border-t border-line pt-5">
+        <div>
+          <h2 className="flex flex-wrap items-center gap-2 font-display text-[20px] font-light tracking-tight">
+            {t('drones.simTitle')} <SimPill>{t('drones.sim')}</SimPill>
+          </h2>
+          <p className="mt-1 max-w-[760px] text-[13px] text-muted">{t('drones.simSub')}</p>
         </div>
         {!phone && (
           <button onClick={exportAll} className="inline-flex h-9 items-center gap-2 rounded-lg border border-line-strong px-3 text-sm hover:bg-white/[0.05] cursor-pointer">
@@ -37,10 +68,24 @@ export function OperationsView() {
         )}
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <FireMap mode="drones" className={phone ? 'h-[46vh] rounded-2xl border border-line' : 'h-[520px]'} />
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="relative">
+          <FireMap mode="drones" className={phone ? 'h-[46vh] rounded-2xl border border-line' : 'h-[480px]'} />
+          <span className="pointer-events-none absolute start-3 top-3 z-10 rounded-full border border-amber-400/50 bg-black/70 px-2.5 py-1 text-[11px] font-medium text-amber-300 backdrop-blur">
+            {t('drones.sim')}
+          </span>
+        </div>
         <div className="grid content-start gap-4">
-          <DroneFeedCard />
+          <section className="fg-card p-3" aria-label={t('drones.simTitle')}>
+            <div className="grid grid-cols-2 gap-2">
+              {stats.map(([n, label]) => (
+                <div key={label} className="rounded-xl bg-white/[0.04] px-3 py-2">
+                  <div className="num text-[22px] font-light leading-tight">{n}</div>
+                  <div className="text-[11.5px] text-muted">{label}</div>
+                </div>
+              ))}
+            </div>
+          </section>
           <ControlsCard />
         </div>
       </div>

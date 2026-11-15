@@ -1,9 +1,9 @@
 // Overview side panels: AI prediction slot, satellite thermal feed, weather, drone fleet,
-// simulated drone feed, response controls, system alerts.
+// response controls, system alerts.
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
 import { useId, useMemo, useState, type ReactNode } from 'react'
 import {
-  AlertTriangle, ArrowRight, BrainCircuit, ChevronLeft, ChevronRight, Droplets, Layers as LayersIcon, Navigation,
+  AlertTriangle, ArrowRight, BrainCircuit, ChevronLeft, ChevronRight, Droplets, Layers as LayersIcon,
   Plane, Power, Rocket, Siren, Thermometer, Wind, CloudSun, Bell,
 } from 'lucide-react'
 import { useApp } from '@/lib/store'
@@ -206,66 +206,6 @@ export function FleetCard() {
         {!busy.length && <li className="text-muted">All drones on standby.</li>}
       </ul>
     </Card>
-  )
-}
-
-export function DroneFeedCard() {
-  const { drones, simNow } = useLive()
-  const { t } = useT()
-  const d = drones.find((x) => x.status === 'Active' && x.mission?.kind !== 'cool') ?? drones.find((x) => x.status === 'Active') ?? drones.find((x) => x.status === 'Deploying')
-  // Aerial still for the simulated camera: Sentinel-2 cloudless 10 m mosaic (EOX), centred on the drone.
-  const snap = d?.mission && aerialStill(d.mission.target.lat, d.mission.target.lon)
-  const onTarget = d?.status === 'Active'
-  const kindLabel = d?.mission?.kind === 'cool' ? 'Cooling spray' : d?.mission?.kind === 'scout' ? 'Scouting' : 'Suppression'
-  return (
-    <section className="fg-card overflow-hidden p-0">
-      <div className="relative aspect-[16/9] bg-black">
-        {snap ? <img src={snap.url} alt="" className="fg-kenburns h-full w-full object-cover opacity-80" /> : <div className="grid h-full place-items-center text-xs text-muted">{t('drones.noneAirborne')}</div>}
-        {d && (
-          <div className="fg-hud absolute inset-0 p-2.5 text-[10.5px] num">
-            <div className="flex justify-between"><span><span className="mr-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />SIM · {d.drone.id} · {d.drone.model.split(' ')[0]}</span><Pill tone={onTarget ? 'green' : 'amber'}>{onTarget ? 'On target' : 'In flight'}</Pill></div>
-            <div className="fg-reticle" />
-            <div className="absolute bottom-2.5 left-2.5 right-2.5 grid gap-1">
-              <div className="flex justify-between text-white/80"><span>ALT {d.mission?.kind === 'scout' ? 120 : 60} m</span><span>{d.lat.toFixed(3)}°N {d.lon.toFixed(3)}°E</span><span>{new Date(simNow()).toISOString().slice(11, 19)}Z</span></div>
-              {onTarget ? (
-                <>
-                  <Bar label={`${kindLabel} progress`} v={d.progress} color="#4ade80" />
-                  <Bar label={d.mission?.kind === 'cool' ? 'Coolant remaining' : 'Water / retardant remaining'} v={d.coolant / 100} color="#22d3ee" />
-                </>
-              ) : (
-                <Bar label={`En route · ETA ${d.etaMin?.toFixed(0)} min`} v={1 - (d.etaMin ?? 0) / Math.max(1, (d.mission!.distKm / 110) * 60)} color="#fbbf24" />
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-      <div className="flex items-center justify-between px-4 py-2.5 text-[12px]">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2"><span className={cn('h-2 w-2 rounded-full', onTarget ? 'bg-emerald-400' : 'bg-amber-400')} /><b className="font-medium">{d ? d.drone.id : 'Drone feed'}</b></div>
-          <div className="truncate text-muted">{d?.mission ? `${kindLabel} · ${d.mission.target.label}` : 'Standby'}</div>
-        </div>
-        {d?.mission && <div className="flex shrink-0 gap-3 text-muted num"><span className="inline-flex items-center gap-1"><Navigation size={12} />{d.mission.distKm.toFixed(0)} km</span></div>}
-      </div>
-      <div className="border-t border-line px-4 py-1.5 text-[10px] text-faint">{t('drones.feedNote')} <span dir="ltr">Sentinel-2 cloudless © EOX (Copernicus).</span></div>
-    </section>
-  )
-}
-
-function aerialStill(lat: number, lon: number, half = 0.035) {
-  const dy = half * (270 / 480)
-  const p = new URLSearchParams({
-    service: 'WMS', request: 'GetMap', version: '1.1.1', layers: 's2cloudless-2023', srs: 'EPSG:4326',
-    bbox: [lon - half, lat - dy, lon + half, lat + dy].map((v) => v.toFixed(4)).join(','), width: '480', height: '270', format: 'image/jpeg',
-  })
-  return { url: `https://tiles.maps.eox.at/wms?${p}` }
-}
-
-function Bar({ label, v, color }: { label: string; v: number; color: string }) {
-  return (
-    <div>
-      <div className="flex justify-between text-white/85"><span>{label}</span><span>{Math.round(Math.max(0, Math.min(1, v)) * 100)}%</span></div>
-      <div className="mt-0.5 h-1 rounded-full bg-white/15"><div className="h-full rounded-full" style={{ width: `${Math.max(0, Math.min(1, v)) * 100}%`, background: color }} /></div>
-    </div>
   )
 }
 

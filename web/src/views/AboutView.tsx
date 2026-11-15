@@ -10,7 +10,7 @@ function AboutAr() {
       <Panel title="عن حارس الحرائق">
         <div className="grid gap-3 text-[14px] leading-relaxed text-muted">
           <p>حارس الحرائق هو مشاركتنا في <b className="text-ink">تحدي ناسا لتطبيقات الفضاء 2026</b> ضمن تحدي «دمج رصد النقاط الحرارية من MODIS وVIIRS». يحوّل المشروع جيلين من مستشعرات الحرائق لدى ناسا إلى سجل موحّد للمملكة العربية السعودية، ثم يستخدم هذا السجل مع الرصد المباشر من الأقمار وبيانات الطقس لرصد الحرائق وتحديد المناطق الأكثر خطورة.</p>
-          <p className="rounded-lg border border-ember/30 bg-ember-soft p-3 text-ink/90">حارس الحرائق أداة بحثية وتوضيحية، وليس نظام إنذار رسمياً ولا يحل محل الدفاع المدني. أسطول المسيّرات محاكاة فقط ولم يُختبر على عتاد حقيقي.</p>
+          <p className="rounded-lg border border-ember/30 bg-ember-soft p-3 text-ink/90">حارس الحرائق أداة بحثية وتوضيحية، وليس نظام إنذار رسمياً ولا يحل محل الدفاع المدني. صفحة عرض المسيّرات تصوّر مستقبلي: الفيديو رسوم متحركة والأسطول محاكاة، ولم يُختبر أي عتاد حقيقي.</p>
         </div>
       </Panel>
       <div className="grid gap-4 md:grid-cols-2">
@@ -50,7 +50,7 @@ export function AboutView() {
       <Panel title="About Fire Guardian">
         <div className="grid gap-3 text-sm leading-relaxed text-muted">
           <p>Fire Guardian is our entry to the <b className="text-ink">NASA Space Apps Challenge 2026</b>, challenge <i>“Harmonization of MODIS and VIIRS Hot Spots”</i>. It turns two generations of NASA fire sensors into one consistent record for Saudi Arabia, then uses that record, with live satellite detections and weather, to detect fires, flag high-risk areas and plan a drone response.</p>
-          <p className="rounded-lg border border-ember/30 bg-ember-soft p-3 text-ink/90">Fire Guardian is a research and demonstration tool. It is not an official warning system and does not replace the Saudi Civil Defense. The drone fleet is a simulation; no hardware has been tested.</p>
+          <p className="rounded-lg border border-ember/30 bg-ember-soft p-3 text-ink/90">Fire Guardian is a research and demonstration tool. It is not an official warning system and does not replace the Saudi Civil Defense. The Drone demo page is a concept: the video is an animation and the fleet is a simulation; no hardware has been tested.</p>
         </div>
       </Panel>
       <div className="grid gap-4 md:grid-cols-3">
@@ -72,8 +72,9 @@ export function AboutView() {
             <li><b className="text-ink">Weather</b>: wind, humidity and temperature at the selected point from Meteomatics.</li>
           </ul>
         </Panel>
-        <Panel title="3 · Drone fleet command">
+        <Panel title="3 · Drone response (concept)">
           <ul className="grid gap-2 text-[13px] text-muted">
+            <li><b className="text-ink">A showcase, not a working system.</b> The Drone demo page shows how drones could work with Fire Guardian: a concept animation and a simulated fleet flown over today’s real fire detections. No drones exist yet.</li>
             <li>18 simulated drones at 12 regional bases. Squadron A attempts suppression on fires; Squadron B sprays preventive coolant on high-risk zones.</li>
             <li>Auto-response dispatches the nearest drones in range, sized by fire radiative power. You can also launch a squadron manually.</li>
             <li>Missions export as QGroundControl <code>.plan</code> files.</li>

@@ -13,7 +13,7 @@ export const VIEW_META: { id: ViewId; label: string; icon: LucideIcon; hint: str
   { id: 'calendar', label: 'Analytics', icon: BarChart3, hint: 'Harmonized MODIS + VIIRS burning calendar', nav: true, key: 'nav.analytics' },
   { id: 'method', label: 'Harmonization & validation', icon: FlaskConical, hint: 'Method, ratios, leave-one-year-out, flare mask' },
   { id: 'aimodel', label: 'AI model validation', icon: BrainCircuit, hint: 'Research model: inputs, coverage, 2024/2025 validation vs baseline' },
-  { id: 'operations', label: 'Drones', icon: Plane, hint: 'Drone response simulation, missions, .plan export', nav: true, key: 'nav.drones' },
+  { id: 'operations', label: 'Drone demo', icon: Plane, hint: 'Concept: how drones could respond (simulation, not real)', nav: true, key: 'nav.drones' },
   { id: 'about', label: 'About', icon: Info, hint: 'Project, data sources, credits, AI use', nav: true, key: 'nav.about' },
 ]
 
