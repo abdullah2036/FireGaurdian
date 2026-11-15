@@ -1,4 +1,4 @@
-// Fire Guardian shell: floating glass navigation dock, Overview hero and planet, footer.
+// Fire Guardian shell: header with a glass navigation pill, Overview hero and planet, footer.
 // AI-assisted: written with Claude Code (Anthropic) for NASA Space Apps 2026.
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { BarChart3, BrainCircuit, Info, Map as MapIcon, Plane, Search, FlaskConical, type LucideIcon } from 'lucide-react'
@@ -27,7 +27,7 @@ export function Header({ onPalette }: { onPalette: () => void }) {
   const liveState = error ? 'Offline' : loading && !firms ? 'Connecting' : firms?.mock ? 'Mock data' : 'Live'
   const liveLabel = t(liveState === 'Offline' ? 'status.offline' : liveState === 'Connecting' ? 'status.connecting' : liveState === 'Mock data' ? 'status.mock' : 'status.live')
 
-  // dock gets denser once the page scrolls
+  // nav pill floats (wide screens) and gets denser once the page scrolls
   const [scrolled, setScrolled] = useState(false)
   useEffect(() => {
     const on = () => setScrolled(window.scrollY > 8)
@@ -54,46 +54,44 @@ export function Header({ onPalette }: { onPalette: () => void }) {
   }, [active, lang])
 
   return (
-    <div className="sticky top-0 z-40 px-3 pt-3 sm:px-6">
-      <header className={cn(
-        'mx-auto flex max-w-[1680px] items-center gap-4 rounded-2xl border px-3 transition-[height,background-color,border-color,box-shadow] duration-300 sm:px-4',
+    <header className="relative z-40 flex h-[72px] items-center gap-6 px-4 sm:px-8">
+      <button onClick={() => set({ view: 'overview' })} className="group flex items-center gap-2.5 text-ink cursor-pointer" aria-label="Fire Guardian home">
+        <NovaMark className="h-8 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105" />
+        <span className="font-display text-[19px] font-medium tracking-tight">{t('app.name')}</span>
+      </button>
+      {/* Glass pill around the sections. On wide screens it is centred and floats at the top
+          once the page scrolls; below xl it stays in the header row. */}
+      <nav ref={navRef} aria-label="Main" className={cn(
+        'relative mx-auto hidden items-center rounded-2xl border p-1 transition-[background-color,border-color,box-shadow] duration-300 md:flex',
+        'xl:left-1/2 xl:top-[13px] xl:mx-0 xl:-translate-x-1/2',
         scrolled
-          ? 'h-[56px] border-white/[0.12] bg-[#070a12]/80 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.85)] backdrop-blur-xl'
-          : 'h-[64px] border-white/[0.08] bg-white/[0.035] backdrop-blur-md',
+          ? 'border-white/[0.14] bg-[#070a12]/80 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.85)] backdrop-blur-xl xl:fixed'
+          : 'border-white/[0.08] bg-white/[0.04] backdrop-blur-md xl:absolute',
       )}>
-        <button onClick={() => set({ view: 'overview' })} className="group flex items-center gap-2.5 rounded-xl py-1 pe-2 text-ink cursor-pointer" aria-label="Fire Guardian home">
-          <NovaMark className="h-8 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105" />
-          <span className="flex flex-col items-start leading-none">
-            <span className="font-display text-[18px] font-medium tracking-tight">{t('app.name')}</span>
-            <span className="mt-1 hidden text-[10.5px] tracking-wide text-faint lg:block">{t('brand.by')}</span>
-          </span>
-        </button>
-        <nav ref={navRef} aria-label="Main" className="relative mx-auto hidden items-center rounded-xl p-1 md:flex">
-          {ind && <span aria-hidden className="absolute inset-y-1 rounded-lg bg-white/[0.09] ring-1 ring-inset ring-white/[0.1] transition-[left,width] duration-300 ease-out" style={{ left: ind.left, width: ind.width }} />}
-          {VIEW_META.filter((v) => v.nav).map((v) => (
-            <button key={v.id} onClick={() => set({ view: v.id })} aria-current={active === v.id ? 'page' : undefined}
-              className={cn('relative z-10 rounded-lg px-4 py-2 text-[14px] transition-colors duration-200 cursor-pointer',
-                active === v.id ? 'text-ink' : 'text-muted hover:bg-white/[0.05] hover:text-ink')}>
-              {v.key ? t(v.key) : v.label}
-            </button>
-          ))}
-        </nav>
-        <div className="ms-auto flex items-center gap-3 md:ms-0">
-          <button onClick={onPalette} className="hidden h-9 items-center gap-2 rounded-full border border-line px-3 text-[12px] text-muted transition-colors hover:border-line-strong hover:text-ink lg:inline-flex cursor-pointer" aria-label="Open command palette">
-            <Search size={13} /> <kbd className="num text-[10px]">Ctrl K</kbd>
+        {ind && <span aria-hidden className="absolute inset-y-1 rounded-xl bg-white/[0.1] ring-1 ring-inset ring-white/[0.1] transition-[left,width] duration-300 ease-out" style={{ left: ind.left, width: ind.width }} />}
+        {VIEW_META.filter((v) => v.nav).map((v) => (
+          <button key={v.id} onClick={() => set({ view: v.id })} aria-current={active === v.id ? 'page' : undefined}
+            className={cn('relative z-10 rounded-xl px-4 py-2 text-[14px] transition-colors duration-200 cursor-pointer',
+              active === v.id ? 'text-ink' : 'text-muted hover:bg-white/[0.05] hover:text-ink')}>
+            {v.key ? t(v.key) : v.label}
           </button>
-          <span className="inline-flex items-center gap-2 text-[13px] text-muted" title={firms ? `FIRMS fetched ${firms.fetchedAt}` : undefined}>
-            <span className={cn('relative flex h-2 w-2')}>
-              {liveState === 'Live' && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60 motion-reduce:hidden" />}
-              <span className={cn('relative h-2 w-2 rounded-full', liveState === 'Live' ? 'bg-emerald-400' : liveState === 'Connecting' ? 'bg-amber-400' : 'bg-red-500')} />
-            </span>
-            {liveLabel}
+        ))}
+      </nav>
+      <div className="ms-auto flex items-center gap-3 md:ms-0 xl:ms-auto">
+        <button onClick={onPalette} className="hidden h-9 items-center gap-2 rounded-full border border-line px-3 text-[12px] text-muted transition-colors hover:border-line-strong hover:text-ink lg:inline-flex cursor-pointer" aria-label="Open command palette">
+          <Search size={13} /> <kbd className="num text-[10px]">Ctrl K</kbd>
+        </button>
+        <span className="inline-flex items-center gap-2 text-[13px] text-muted" title={firms ? `FIRMS fetched ${firms.fetchedAt}` : undefined}>
+          <span className={cn('relative flex h-2 w-2')}>
+            {liveState === 'Live' && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60 motion-reduce:hidden" />}
+            <span className={cn('relative h-2 w-2 rounded-full', liveState === 'Live' ? 'bg-emerald-400' : liveState === 'Connecting' ? 'bg-amber-400' : 'bg-red-500')} />
           </span>
-          <LangToggle />
-          {view !== 'overview' && <RegionSelect compact />}
-        </div>
-      </header>
-    </div>
+          {liveLabel}
+        </span>
+        <LangToggle />
+        {view !== 'overview' && <RegionSelect compact />}
+      </div>
+    </header>
   )
 }
 

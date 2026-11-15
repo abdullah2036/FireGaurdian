@@ -8,7 +8,7 @@ export type Lang = 'en' | 'ar'
 
 const en = {
   'nav.map': 'Map', 'nav.analytics': 'Analytics', 'nav.drones': 'Drone demo', 'nav.about': 'About',
-  'app.name': 'Fire Guardian', 'brand.by': 'by team NovaShift',
+  'app.name': 'Fire Guardian',
   'hero.a': 'Detect.', 'hero.b': 'Predict.', 'hero.c': 'Protect.',
   'hero.sub': 'Live wildfire monitoring for Saudi Arabia from NASA satellites.',
   'status.live': 'Live', 'status.connecting': 'Connecting', 'status.offline': 'Offline', 'status.mock': 'Test data',
@@ -180,7 +180,7 @@ export type Key = keyof typeof en
 
 const ar: Record<Key, string> = {
   'nav.map': 'الخريطة', 'nav.analytics': 'التحليلات', 'nav.drones': 'عرض المسيّرات', 'nav.about': 'عن المشروع',
-  'app.name': 'حارس الحرائق', 'brand.by': 'من فريق NovaShift',
+  'app.name': 'حارس الحرائق',
   'hero.a': 'رصد.', 'hero.b': 'تنبؤ.', 'hero.c': 'حماية.',
   'hero.sub': 'رصد مباشر لحرائق الغطاء النباتي في المملكة العربية السعودية عبر أقمار ناسا.',
   'status.live': 'مباشر', 'status.connecting': 'جارٍ الاتصال', 'status.offline': 'غير متصل', 'status.mock': 'بيانات تجريبية',
